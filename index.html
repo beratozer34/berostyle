@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>BEROSTYLE - Özel Arkadaş Grubu Ağı</title>
-    <!-- Firebase Legacy SDK -->
+    <!-- Firebase Legacy SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
@@ -1335,7 +1335,9 @@
     <script>
         /**
          * ============================================================================
-         * BEROSTYLE CORE ENGINE (v5.3 ULTIMATE TITAN EDITION)
+         * BEROSTYLE CORE ENGINE (v5.3 ULTIMATE TITAN - REALTIME FIREBASE EDITION)
+         * - Fully Integrated with Custom Firebase Project (berostyle-be218)
+         * - Real-Time Listeners for Instant Message & User Synchronization
          * - Zero Admin Panel Leakage for Ordinary Users
          * - Twitter/X Style Verification Badges (Gold for Founder, Blue for Approved)
          * - WhatsApp Double-Click Deletion, Emoji Bar, Story Garbage Collector
@@ -1385,21 +1387,72 @@
             }
         };
 
-        /* --- 3. ADVANCED HYBRID DATABASE ENGINE --- */
+        /* --- 3. ADVANCED HYBRID DATABASE ENGINE (FIREBASE REALTIME INTEGRATION) --- */
         const DatabaseEngine = {
             dbRef: null,
             isFirebaseActive: false,
 
             init: function() {
                 try {
-                    const firebaseConfig = { databaseURL: "https://DUMMY_URL.firebaseio.com/" };
+                    // SENİN KENDİ FIREBASE PROJE KİMLİKLERİN (TAMAMEN ENTEGRE EDİLDİ)
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyCtZ7M7Fxa9PQlNs_vzJmBvHI4ig-_jQ78",
+                        authDomain: "berostyle-be218.firebaseapp.com",
+                        databaseURL: "https://berostyle-be218-default-rtdb.firebaseio.com/", // Eğer Avrupa seçtiysen link ...europe-west1.firebasedatabase.app/ olabilir, teyit et!
+                        projectId: "berostyle-be218",
+                        storageBucket: "berostyle-be218.firebasestorage.app",
+                        messagingSenderId: "304776349678",
+                        appId: "1:304776349678:web:1f0d73720cc37397aa70ff",
+                        measurementId: "G-4H85R7PF3T"
+                    };
                     firebase.initializeApp(firebaseConfig);
                     this.dbRef = firebase.database();
                     this.isFirebaseActive = true;
+                    console.log("🔥 BEROSTYLE BULUT VERİTABANINA BAŞARIYLA BAĞLANDI!");
+                    
+                    this.startRealtimeListeners();
                 } catch(e) {
+                    console.log("Firebase bağlantısında sorun çıktı, yerel hafızaya geçiliyor.", e);
                     this.isFirebaseActive = false;
                 }
                 this.seedInitialUsers();
+            },
+
+            // GERÇEK ZAMANLI BULUT DİNLEYİCİSİ (SAYFA YENİLEMEDEN ANLIK GÜNCELLEME)
+            startRealtimeListeners: function() {
+                if (!this.isFirebaseActive || !this.dbRef) return;
+
+                // 1. Kullanıcıları Canlı Dinle
+                this.dbRef.ref('users').on('value', (snap) => {
+                    const cloudUsers = snap.val();
+                    if (cloudUsers) {
+                        localStorage.setItem('berostyle_users_db', JSON.stringify(cloudUsers));
+                        if(AppController.currentUser) AppController.refreshUI();
+                    }
+                });
+
+                // 2. Hikayeleri Canlı Dinle
+                this.dbRef.ref('stories').on('value', (snap) => {
+                    const cloudStories = snap.val();
+                    if (cloudStories) {
+                        localStorage.setItem('berostyle_stories_db', JSON.stringify(cloudStories));
+                        if(AppController.currentUser) AppController.renderStories();
+                    }
+                });
+
+                // 3. Mesajları Canlı Dinle
+                this.dbRef.ref('messages').on('value', (snap) => {
+                    const allMessages = snap.val();
+                    if (allMessages) {
+                        for (let roomId in allMessages) {
+                            const roomMsgsObj = allMessages[roomId];
+                            const msgsArray = Object.values(roomMsgsObj);
+                            localStorage.setItem('chat_' + roomId, JSON.stringify(msgsArray));
+                        }
+                        if(AppController.activeChatTarget) AppController.renderMessages();
+                        if(AppController.currentUser) AppController.renderUserLists(); // Okunmadı bildirimleri güncellensin
+                    }
+                });
             },
 
             seedInitialUsers: function() {
@@ -1462,6 +1515,7 @@
                         }
                     };
                     localStorage.setItem('berostyle_users_db', JSON.stringify(users));
+                    if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users').set(users);
                 }
 
                 let stories = this.getLocalStories();
@@ -1481,6 +1535,7 @@
                         }
                     };
                     localStorage.setItem('berostyle_stories_db', JSON.stringify(stories));
+                    if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('stories').set(stories);
                 }
             },
 
@@ -1536,12 +1591,17 @@
             saveMessage: function(roomId, msgObj) {
                 let msgs = this.getMessages(roomId); msgs.push(msgObj);
                 localStorage.setItem('chat_' + roomId, JSON.stringify(msgs));
-                if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('messages/' + roomId).push(msgObj);
+                if (this.isFirebaseActive && this.dbRef) {
+                    this.dbRef.ref('messages/' + roomId + '/' + msgObj.id).set(msgObj);
+                }
             },
             deleteMessage: function(roomId, msgId) {
                 let msgs = this.getMessages(roomId);
                 msgs = msgs.filter(m => m.id !== msgId);
                 localStorage.setItem('chat_' + roomId, JSON.stringify(msgs));
+                if (this.isFirebaseActive && this.dbRef) {
+                    this.dbRef.ref('messages/' + roomId + '/' + msgId).remove();
+                }
                 Logger.log(`Mesaj silindi (Oda: ${roomId})`);
                 return true;
             },
@@ -1552,6 +1612,9 @@
                     if (m.sender !== currentUser && !m.read) {
                         m.read = true;
                         changed = true;
+                        if (this.isFirebaseActive && this.dbRef) {
+                            this.dbRef.ref('messages/' + roomId + '/' + m.id + '/read').set(true);
+                        }
                     }
                 });
                 if (changed) {
