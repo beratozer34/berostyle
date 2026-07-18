@@ -1282,6 +1282,7 @@
          * - Twitter/X Style Verification Badges (Gold for Founder, Blue for Approved)
          * - WhatsApp Double-Click Deletion, Emoji Bar, Story Garbage Collector
          * - Advanced System Activity Logging
+         * - Seamless Auto-Login (Bypass Login Screens on Re-open)
          * ============================================================================
          */
 
@@ -1497,6 +1498,8 @@
                     const freshUser = DatabaseEngine.getUser(parsed.username);
                     if (freshUser) {
                         this.currentUser = freshUser;
+                        // Hızlı, şifresiz ve otomatik geçiş için direkt uygulama ekranına atıyoruz
+                        this.switchScreen('screen-gender', 'app-screen');
                         this.launchApp();
                         return;
                     }
@@ -1505,8 +1508,12 @@
             },
 
             switchScreen: function(fromId, toId) {
-                document.getElementById(fromId).classList.add('hidden');
-                setTimeout(() => document.getElementById(toId).classList.remove('hidden'), 150);
+                const fromEl = document.getElementById(fromId);
+                if (fromEl) fromEl.classList.add('hidden');
+                setTimeout(() => {
+                    const toEl = document.getElementById(toId);
+                    if (toEl) toEl.classList.remove('hidden');
+                }, 150);
             },
 
             selectGender: function(g) {
@@ -1686,10 +1693,19 @@
                     if (u.status === 'onaylı' || u.isAdmin) {
                         if (u.username !== this.currentUser.username) {
                             approvedCount++;
+                            
+                            // DM MESAJ SAYISI / KIRMZI BİLDİRİM RAKAMI HESAPLAMA
+                            const msgs = DatabaseEngine.getMessages(this.getRoomId(this.currentUser.username, u.username));
+                            const unreadCount = msgs.length;
+                            let notificationHtml = unreadCount > 0 ? `<div style="background:red; color:white; border-radius:50%; width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:bold; margin-right:8px;">${unreadCount}</div>` : '';
+
                             const item = document.createElement('div'); item.className = 'user-item';
                             item.innerHTML = `
                                 <div class="user-meta">${avHtml}<div class="user-name-box"><h4>${u.username} ${badge}</h4></div></div>
-                                <button class="dm-action-btn" onclick="AppController.openChatRoom('${u.username}', '${u.ppUrl}')">Mesaj At</button>
+                                <div style="display:flex; align-items:center;">
+                                    ${notificationHtml}
+                                    <button class="dm-action-btn" onclick="AppController.openChatRoom('${u.username}', '${u.ppUrl}')">Mesaj At</button>
+                                </div>
                             `;
                             activeDom.appendChild(item);
 
@@ -1820,7 +1836,7 @@
                 document.getElementById('chat-target-name-display').innerText = tUser;
                 const avBox = document.getElementById('chat-target-avatar-box');
                 const avImg = document.getElementById('chat-target-avatar-img');
-                if (tPp) { avImg.src = tPp; avImg.style.display = 'block'; avBox.classList.remove('pp-display-style'); }
+                if (tPp && tPp !== 'undefined' && tPp !== '') { avImg.src = tPp; avImg.style.display = 'block'; avBox.classList.remove('pp-display-style'); }
                 else { avImg.style.display = 'none'; avBox.classList.add('pp-display-style'); }
                 document.getElementById('chat-room').classList.add('active');
                 this.renderMessages();
@@ -1830,6 +1846,7 @@
                 document.getElementById('chat-room').classList.remove('active');
                 document.getElementById('emoji-bar-dom').classList.remove('active');
                 this.activeChatTarget = null;
+                this.refreshUI(); // Ekran kapanınca kırmızı bildirim sayılarını da güncelle
             },
 
             toggleEmojiBar: function() { document.getElementById('emoji-bar-dom').classList.toggle('active'); },
