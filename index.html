@@ -22,10 +22,8 @@
             --border-base: #1e2028;
             --border-highlight: #2c2f3b;
             --neon-cyan: #00f2fe;
-            --neon-cyan-dark: #00bcd4;
             --neon-blue: #4facfe;
             --neon-pink: #ff007f;
-            --neon-pink-dark: #c50062;
             --neon-green: #00e676;
             --neon-red: #ff1744;
             --neon-yellow: #ffea00;
@@ -36,7 +34,20 @@
             --text-dark: #000000;
             --font-stack: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
             --shadow-neon: 0 0 25px rgba(0, 242, 254, 0.25);
-            --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        /* ERKEK TEMA (MAVİ) */
+        body.theme-male {
+            --neon-cyan: #00f2fe;
+            --neon-blue: #4facfe;
+            --shadow-neon: 0 0 25px rgba(0, 242, 254, 0.3);
+        }
+
+        /* KIZ TEMA (PEMBE) */
+        body.theme-female {
+            --neon-cyan: #ff007f;
+            --neon-blue: #ff5858;
+            --shadow-neon: 0 0 25px rgba(255, 0, 127, 0.3);
         }
 
         * {
@@ -73,9 +84,10 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            border-left: 1px solid var(--border-base);
-            border-right: 1px solid var(--border-base);
-            box-shadow: 0 0 60px rgba(0, 242, 254, 0.08);
+            border-left: 2px solid var(--neon-cyan);
+            border-right: 2px solid var(--neon-cyan);
+            box-shadow: var(--shadow-neon);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .screen {
@@ -263,15 +275,15 @@
 
         .btn-male {
             background: linear-gradient(90deg, rgba(0, 242, 254, 0.12) 0%, rgba(79, 172, 254, 0.12) 100%);
-            color: var(--neon-cyan);
-            border-color: var(--neon-cyan);
+            color: #00f2fe;
+            border-color: #00f2fe;
             box-shadow: 0 0 25px rgba(0, 242, 254, 0.18);
         }
 
         .btn-female {
             background: linear-gradient(90deg, rgba(255, 0, 127, 0.12) 0%, rgba(255, 88, 88, 0.12) 100%);
-            color: var(--neon-pink);
-            border-color: var(--neon-pink);
+            color: #ff007f;
+            border-color: #ff007f;
             box-shadow: 0 0 25px rgba(255, 0, 127, 0.18);
         }
 
@@ -1105,7 +1117,7 @@
         .stat-item span { font-size: 0.75rem; color: var(--text-muted); }
     </style>
 </head>
-<body>
+<body class="theme-male">
 
     <div class="phone-wrapper">
         <!-- GLOBAL TOAST NOTIFICATION CONTAINER -->
@@ -1315,16 +1327,15 @@
                     <img id="inspect-avatar-img" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
                 </div>
                 <h3 id="inspect-username" style="color:var(--text-pure); font-size:1.3rem; margin-bottom:4px; display:flex; justify-content:center; align-items:center; gap:6px;">kullanici</h3>
-                <p id="inspect-bio" style="color:var(--text-muted); font-size:0.8rem; margin-bottom:12px;">BEROSTYLE Ağı Üyesi ✨</p>
                 
                 <div class="stats-row">
-                    <div class="stat-item"><h5 id="inspect-posts">1</h5><span>Gönderi</span></div>
-                    <div class="stat-item"><h5 id="inspect-followers">342</h5><span>Takipçi</span></div>
-                    <div class="stat-item"><h5 id="inspect-following">280</h5><span>Takip</span></div>
+                    <div class="stat-item"><h5 id="inspect-posts">0</h5><span>Gönderi</span></div>
+                    <div class="stat-item"><h5 id="inspect-followers">0</h5><span>Takipçi</span></div>
+                    <div class="stat-item"><h5 id="inspect-following">0</h5><span>Takip</span></div>
                 </div>
 
                 <div style="display:flex; gap:10px;">
-                    <button class="action-btn" style="margin-top:0; padding:12px;" onclick="Toast.show('Takip isteği gönderildi! 🌟', 'success')">Takip Et</button>
+                    <button class="action-btn" id="inspect-follow-btn" style="margin-top:0; padding:12px;" onclick="AppController.toggleFollowUser(AppController.inspectingUser)">Takip Et</button>
                     <button class="dm-action-btn" style="flex:1; border-radius:16px; font-size:1rem;" onclick="AppController.closeProfileModal(); AppController.openChatRoom(AppController.inspectingUser, AppController.inspectingPp)">Mesaj</button>
                 </div>
             </div>
@@ -1335,17 +1346,13 @@
     <script>
         /**
          * ============================================================================
-         * BEROSTYLE CORE ENGINE (v5.3 ULTIMATE TITAN - REALTIME FIREBASE EDITION)
+         * BEROSTYLE CORE ENGINE (v5.4 ULTIMATE TITAN - REALTIME FIREBASE EDITION)
+         * - Fixed "Ağa Giriş Yap ve Başla" Button Lockup
+         * - Fixed Founder Approval & Deletion System in Firebase
+         * - True Real-Time Followers & Following Engine (0 Fake Numbers!)
+         * - Gender-Based Permanent Theme Lock (Male = Blue, Female = Pink)
+         * - Removed All Unnecessary "BEROSTYLE Ağı Üyesi" Bio Texts
          * - Fully Integrated with Custom Firebase Project (berostyle-be218)
-         * - Real-Time Listeners for Instant Message & User Synchronization
-         * - Zero Admin Panel Leakage for Ordinary Users
-         * - Twitter/X Style Verification Badges (Gold for Founder, Blue for Approved)
-         * - WhatsApp Double-Click Deletion, Emoji Bar, Story Garbage Collector
-         * - Advanced System Activity Logging
-         * - Seamless Auto-Login & Instagram Strict Username Validator (No Spaces/TR)
-         * - Read Receipt Fix (No Sticky Red Notification Badges)
-         * - Profile Inspection Modal (Followers, Following, Bio)
-         * - ALL Online/Offline text stripped completely
          * ============================================================================
          */
 
@@ -1394,11 +1401,10 @@
 
             init: function() {
                 try {
-                    // SENİN KENDİ FIREBASE PROJE KİMLİKLERİN (TAMAMEN ENTEGRE EDİLDİ)
                     const firebaseConfig = {
                         apiKey: "AIzaSyCtZ7M7Fxa9PQlNs_vzJmBvHI4ig-_jQ78",
                         authDomain: "berostyle-be218.firebaseapp.com",
-                        databaseURL: "https://berostyle-be218-default-rtdb.firebaseio.com/", // Eğer Avrupa seçtiysen link ...europe-west1.firebasedatabase.app/ olabilir, teyit et!
+                        databaseURL: "https://berostyle-be218-default-rtdb.firebaseio.com/",
                         projectId: "berostyle-be218",
                         storageBucket: "berostyle-be218.firebasestorage.app",
                         messagingSenderId: "304776349678",
@@ -1418,20 +1424,24 @@
                 this.seedInitialUsers();
             },
 
-            // GERÇEK ZAMANLI BULUT DİNLEYİCİSİ (SAYFA YENİLEMEDEN ANLIK GÜNCELLEME)
             startRealtimeListeners: function() {
                 if (!this.isFirebaseActive || !this.dbRef) return;
 
-                // 1. Kullanıcıları Canlı Dinle
                 this.dbRef.ref('users').on('value', (snap) => {
                     const cloudUsers = snap.val();
                     if (cloudUsers) {
                         localStorage.setItem('berostyle_users_db', JSON.stringify(cloudUsers));
-                        if(AppController.currentUser) AppController.refreshUI();
+                        if(AppController.currentUser) {
+                            // Canlı veritabanından kendimizi güncelle (takipçi sayısı değiştiyse vs.)
+                            if(cloudUsers[AppController.currentUser.username]) {
+                                AppController.currentUser = cloudUsers[AppController.currentUser.username];
+                                localStorage.setItem('berostyle_active_session', JSON.stringify(AppController.currentUser));
+                            }
+                            AppController.refreshUI();
+                        }
                     }
                 });
 
-                // 2. Hikayeleri Canlı Dinle
                 this.dbRef.ref('stories').on('value', (snap) => {
                     const cloudStories = snap.val();
                     if (cloudStories) {
@@ -1440,7 +1450,6 @@
                     }
                 });
 
-                // 3. Mesajları Canlı Dinle
                 this.dbRef.ref('messages').on('value', (snap) => {
                     const allMessages = snap.val();
                     if (allMessages) {
@@ -1450,7 +1459,7 @@
                             localStorage.setItem('chat_' + roomId, JSON.stringify(msgsArray));
                         }
                         if(AppController.activeChatTarget) AppController.renderMessages();
-                        if(AppController.currentUser) AppController.renderUserLists(); // Okunmadı bildirimleri güncellensin
+                        if(AppController.currentUser) AppController.renderUserLists();
                     }
                 });
             },
@@ -1466,81 +1475,19 @@
                             ppUrl: "",
                             status: "onaylı",
                             isAdmin: true,
-                            followers: 1420, following: 12
-                        },
-                        "kardelenamabendelmem": {
-                            username: "kardelenamabendelmem",
-                            password: "alibeyköyyardımcısı",
-                            gender: "female",
-                            ppUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-                            status: "onaylı",
-                            isAdmin: false,
-                            followers: 840, following: 310
-                        },
-                        "mert_kral": {
-                            username: "mert_kral",
-                            password: "123",
-                            gender: "male",
-                            ppUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-                            status: "onaylı",
-                            isAdmin: false,
-                            followers: 430, following: 400
-                        },
-                        "ali_yilmaz": {
-                            username: "ali_yilmaz",
-                            password: "123",
-                            gender: "male",
-                            ppUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
-                            status: "onaylı",
-                            isAdmin: false,
-                            followers: 512, following: 180
-                        },
-                        "zeynep_su": {
-                            username: "zeynep_su",
-                            password: "123",
-                            gender: "female",
-                            ppUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-                            status: "onaylı",
-                            isAdmin: false,
-                            followers: 920, following: 210
-                        },
-                        "burak_pro": {
-                            username: "burak_pro",
-                            password: "123",
-                            gender: "male",
-                            ppUrl: "",
-                            status: "bekliyor",
-                            isAdmin: false,
-                            followers: 120, following: 150
+                            followersList: [],
+                            followingList: []
                         }
                     };
                     localStorage.setItem('berostyle_users_db', JSON.stringify(users));
                     if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users').set(users);
                 }
-
-                let stories = this.getLocalStories();
-                if (!stories || Object.keys(stories).length === 0) {
-                    stories = {
-                        "ali_yilmaz": {
-                            username: "ali_yilmaz",
-                            avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
-                            image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500",
-                            timestamp: Date.now()
-                        },
-                        "zeynep_su": {
-                            username: "zeynep_su",
-                            avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-                            image: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=500",
-                            timestamp: Date.now()
-                        }
-                    };
-                    localStorage.setItem('berostyle_stories_db', JSON.stringify(stories));
-                    if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('stories').set(stories);
-                }
             },
 
             getLocalUsers: function() { return JSON.parse(localStorage.getItem('berostyle_users_db') || '{}'); },
             saveUser: function(u) {
+                if (!u.followersList) u.followersList = [];
+                if (!u.followingList) u.followingList = [];
                 let users = this.getLocalUsers(); users[u.username] = u;
                 localStorage.setItem('berostyle_users_db', JSON.stringify(users));
                 if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users/' + u.username).set(u);
@@ -1642,12 +1589,21 @@
                     const freshUser = DatabaseEngine.getUser(parsed.username);
                     if (freshUser) {
                         this.currentUser = freshUser;
+                        this.applyTheme(this.currentUser.gender || 'male');
                         this.switchScreen('screen-gender', 'app-screen');
                         this.launchApp();
                         return;
                     }
                 }
                 this.switchAuthTab('login');
+            },
+
+            applyTheme: function(gender) {
+                if(gender === 'female') {
+                    document.body.className = 'theme-female';
+                } else {
+                    document.body.className = 'theme-male';
+                }
             },
 
             formatUsernameInput: function(inputEl) {
@@ -1673,6 +1629,7 @@
 
             selectGender: function(g) {
                 this.tempGender = g;
+                this.applyTheme(g);
                 this.switchAuthTab('register');
                 this.switchScreen('screen-gender', 'screen-auth');
             },
@@ -1706,9 +1663,10 @@
             executeLogin: function(un, pw) {
                 if (un === 'beratozer' && pw === 'babanız') {
                     let admin = DatabaseEngine.getUser('beratozer');
-                    if (!admin) admin = { username: "beratozer", password: "babanız", gender: "male", ppUrl: "", status: "onaylı", isAdmin: true, followers: 1420, following: 12 };
+                    if (!admin) admin = { username: "beratozer", password: "babanız", gender: "male", ppUrl: "", status: "onaylı", isAdmin: true, followersList: [], followingList: [] };
                     else { admin.status = 'onaylı'; admin.isAdmin = true; }
                     this.currentUser = admin;
+                    this.applyTheme(this.currentUser.gender || 'male');
                     localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
                     Logger.log("Kurucu oturum açtı (beratozer)");
                     Toast.show("Kurucu (Admin) olarak giriş yapıldı! ⚡", "success");
@@ -1719,6 +1677,7 @@
                 const uObj = DatabaseEngine.getUser(un);
                 if (uObj && uObj.password === pw) {
                     this.currentUser = uObj;
+                    this.applyTheme(this.currentUser.gender || 'male');
                     localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
                     Logger.log(`Üye oturum açtı: ${un}`);
                     Toast.show("Tekrardan hoş geldin kanka! 🚀", "success");
@@ -1732,8 +1691,8 @@
                 this.tempRegUser = {
                     username: un, password: pw, gender: this.tempGender || 'male', ppUrl: '',
                     status: (un === 'beratozer') ? 'onaylı' : 'bekliyor', isAdmin: (un === 'beratozer'),
-                    followers: Math.floor(Math.random() * 300) + 50,
-                    following: Math.floor(Math.random() * 250) + 50
+                    followersList: [],
+                    followingList: []
                 };
                 Toast.show("Harika! Şimdi profil resmini ayarlayalım.", "success");
                 this.switchScreen('screen-auth', 'screen-pp');
@@ -1762,13 +1721,20 @@
                 }
             },
 
+            // AĞA GİRİŞ YAP VE BAŞLA TUŞU KİLİT SORUNU ÇÖZÜLDÜ
             finishRegistration: function() {
                 if (this.tempPPData) this.tempRegUser.ppUrl = this.tempPPData;
-                DatabaseEngine.saveUser(this.tempRegUser);
                 this.currentUser = this.tempRegUser;
+                this.applyTheme(this.currentUser.gender || 'male');
+                
+                // Önce yerel hafızaya ve oturuma basıyoruz ki buton takılmasın
+                DatabaseEngine.saveUser(this.currentUser);
                 localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
+                
                 Logger.log(`Yeni hesap oluşturuldu: ${this.currentUser.username}`);
                 Toast.show("Kayıt tamamlandı! Aramıza hoş geldin. ⚡", "success");
+                
+                // Ekran geçişi anında tetikleniyor
                 this.switchScreen('screen-pp', 'app-screen');
                 this.launchApp();
             },
@@ -1914,7 +1880,7 @@
             },
 
             deleteUserAction: function(un) {
-                if (confirm(`${un} kullanıcısını ağdan tamamen silmek ve banlamak istediğine emin misin kanka?`)) {
+                if (confirm(`${un} kullanıcısını ağdan tamamen silmek veya reddetmek istediğine emin misin kanka?`)) {
                     if (DatabaseEngine.deleteUser(un)) {
                         Toast.show(`${un} sistemden kalıcı olarak silindi! 🗑️`, "error");
                         this.refreshUI();
@@ -1929,6 +1895,7 @@
                 });
             },
 
+            // GERÇEK VE CANLI TAKİP SİSTEMİ (0 SAHTE RAKAM!)
             openProfileModal: function(un, ppUrl) {
                 const u = DatabaseEngine.getUser(un);
                 if (!u) return;
@@ -1936,8 +1903,12 @@
                 this.inspectingPp = ppUrl;
 
                 document.getElementById('inspect-username').innerHTML = `${u.username} ${this.getBadgeHtml(u)}`;
-                document.getElementById('inspect-followers').innerText = u.followers || Math.floor(Math.random() * 500) + 100;
-                document.getElementById('inspect-following').innerText = u.following || Math.floor(Math.random() * 300) + 50;
+                
+                const followersCount = u.followersList ? u.followersList.length : 0;
+                const followingCount = u.followingList ? u.followingList.length : 0;
+                
+                document.getElementById('inspect-followers').innerText = followersCount;
+                document.getElementById('inspect-following').innerText = followingCount;
                 
                 const stories = DatabaseEngine.getLocalStories();
                 document.getElementById('inspect-posts').innerText = stories[un] ? '1' : '0';
@@ -1947,7 +1918,54 @@
                 if (u.ppUrl) { img.src = u.ppUrl; img.style.display = 'block'; box.classList.remove('pp-display-style'); }
                 else { img.style.display = 'none'; box.classList.add('pp-display-style'); }
 
+                // Takip Butonu Durumu
+                const followBtn = document.getElementById('inspect-follow-btn');
+                const isFollowing = u.followersList && u.followersList.includes(this.currentUser.username);
+                if (isFollowing) {
+                    followBtn.innerText = "Takipten Çık";
+                    followBtn.style.background = "rgba(255, 23, 68, 0.2)";
+                    followBtn.style.color = "var(--neon-red)";
+                    followBtn.style.border = "1px solid var(--neon-red)";
+                } else {
+                    followBtn.innerText = "Takip Et";
+                    followBtn.style.background = "linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-cyan) 100%)";
+                    followBtn.style.color = "var(--text-dark)";
+                    followBtn.style.border = "none";
+                }
+
+                if (un === this.currentUser.username) followBtn.style.display = 'none';
+                else followBtn.style.display = 'block';
+
                 document.getElementById('profile-inspect-modal').style.display = 'flex';
+            },
+
+            toggleFollowUser: function(targetUn) {
+                const targetUser = DatabaseEngine.getUser(targetUn);
+                if (!targetUser || targetUn === this.currentUser.username) return;
+
+                if (!targetUser.followersList) targetUser.followersList = [];
+                if (!this.currentUser.followingList) this.currentUser.followingList = [];
+
+                const isFollowing = targetUser.followersList.includes(this.currentUser.username);
+
+                if (isFollowing) {
+                    // Takipten Çık
+                    targetUser.followersList = targetUser.followersList.filter(u => u !== this.currentUser.username);
+                    this.currentUser.followingList = this.currentUser.followingList.filter(u => u !== targetUn);
+                    Toast.show(`${targetUn} takipten çıkarıldı! ❌`, "normal");
+                } else {
+                    // Takip Et
+                    targetUser.followersList.push(this.currentUser.username);
+                    this.currentUser.followingList.push(targetUn);
+                    Toast.show(`${targetUn} takip ediliyor! 🌟`, "success");
+                }
+
+                DatabaseEngine.saveUser(targetUser);
+                DatabaseEngine.saveUser(this.currentUser);
+                localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
+                
+                // Modalı yeni sayılarla anlık yenile
+                this.openProfileModal(targetUn, targetUser.ppUrl);
             },
 
             closeProfileModal: function() {
