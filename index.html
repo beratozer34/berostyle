@@ -26,8 +26,6 @@
             --neon-green: #00e676;
             --neon-red: #ff1744;
             --neon-yellow: #ffea00;
-            --gold-badge: #ffd700;
-            --blue-badge: #1da1f2;
             --text-pure: #ffffff;
             --text-muted: #8c909e;
             --text-dark: #000000;
@@ -65,7 +63,7 @@
             position: relative;
             width: 100vw;
             height: 100vh;
-            max-width: 480px;
+            max-width: 470px;
             background: var(--bg-base);
             overflow: hidden;
             display: flex;
@@ -604,33 +602,11 @@
             font-weight: 800;
             color: var(--text-pure);
             margin-bottom: 3px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        /* TWITTER / X BADGE ENGINE */
-        .verified-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            font-size: 0.75rem;
-            flex-shrink: 0;
-        }
-
-        .badge-gold {
-            background-color: var(--gold-badge);
-            color: #000;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
-        }
-
-        .badge-blue {
-            background-color: var(--blue-badge);
-            color: #fff;
-            box-shadow: 0 0 8px rgba(29, 161, 242, 0.5);
+        .user-name-box p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
         }
 
         .dm-action-btn {
@@ -652,7 +628,7 @@
         }
 
         /* ==========================================================================
-           10. TAB 3: PROFILE & STRICTLY ISOLATED FOUNDER PANEL
+           10. TAB 3: PROFILE & FOUNDER'S GOD-MODE ADMIN PANEL
            ========================================================================== */
         .profile-header-card {
             display: flex;
@@ -682,7 +658,17 @@
             margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+        }
+
+        .admin-badge-icon {
+            background: var(--neon-cyan);
+            color: #000;
+            font-size: 0.68rem;
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
         }
 
         .profile-status-label {
@@ -762,26 +748,6 @@
             font-size: 0.82rem;
             cursor: pointer;
             box-shadow: 0 0 12px rgba(255, 23, 68, 0.4);
-        }
-
-        .system-log-box {
-            background: #08090c;
-            border: 1px solid var(--border-base);
-            border-radius: 12px;
-            padding: 12px;
-            max-height: 140px;
-            overflow-y: auto;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-family: monospace;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .log-entry {
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            padding-bottom: 4px;
         }
 
         .logout-btn {
@@ -1174,12 +1140,12 @@
                             <img src="" id="profile-avatar-img" style="display:none; width:100%; height:100%; object-fit:cover;">
                         </div>
                         <div class="profile-info-box">
-                            <h3 id="profile-username-display">kullanici</h3>
+                            <h3 id="profile-username-display">kullanici <span class="admin-badge-icon hidden" id="admin-badge">KURUCU</span></h3>
                             <div class="profile-status-label" id="profile-status-display">Durum: Bekliyor</div>
                         </div>
                     </div>
 
-                    <!-- GOD-MODE FOUNDER PANEL WITH STRICT ISOLATION -->
+                    <!-- GOD-MODE FOUNDER PANEL WITH DELETE/BAN CAPABILITY -->
                     <div id="admin-section" class="admin-section hidden">
                         <div class="admin-header-title">
                             <span>⚡ KURUCU YÖNETİM PANELİ (BERAT ÖZER)</span>
@@ -1191,12 +1157,7 @@
                         <div class="user-list" id="pending-users-dom" style="margin-bottom:20px;"></div>
 
                         <div class="section-sub-title" style="color:var(--neon-red);">🛡️ ONAYLANMIŞ TÜM AKTİF ÜYELER (SİL / BANLA)</div>
-                        <div class="user-list" id="approved-users-dom" style="margin-bottom:20px;"></div>
-
-                        <div class="section-sub-title" style="color:var(--neon-cyan);">📋 AĞ OLAY GÜNLÜĞÜ (SYSTEM LOGS)</div>
-                        <div class="system-log-box" id="system-logs-dom">
-                            <!-- Logs injected dynamically -->
-                        </div>
+                        <div class="user-list" id="approved-users-dom"></div>
                     </div>
 
                     <button class="logout-btn" onclick="AppController.logout()">Oturumu Güvenli Kapat</button>
@@ -1277,30 +1238,13 @@
     <script>
         /**
          * ============================================================================
-         * BEROSTYLE CORE ENGINE (v5.0 ULTIMATE TITAN EDITION)
-         * - Zero Admin Panel Leakage for Ordinary Users
-         * - Twitter/X Style Verification Badges (Gold for Founder, Blue for Approved)
-         * - WhatsApp Double-Click Deletion, Emoji Bar, Story Garbage Collector
-         * - Advanced System Activity Logging
+         * BEROSTYLE CORE ENGINE (v4.0 TITAN EDITION)
+         * This engine powers member ban/deletion, double-click message removal,
+         * story garbage collection, and local/remote database synchronization.
          * ============================================================================
          */
 
-        /* --- 1. SYSTEM LOGGING ENGINE --- */
-        const Logger = {
-            log: function(eventText) {
-                let logs = JSON.parse(localStorage.getItem('berostyle_sys_logs') || '[]');
-                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                logs.unshift(`[${timeStr}] ${eventText}`);
-                if(logs.length > 30) logs.pop(); // Keep last 30 logs
-                localStorage.setItem('berostyle_sys_logs', JSON.stringify(logs));
-                AppController.renderSystemLogs();
-            },
-            getLogs: function() {
-                return JSON.parse(localStorage.getItem('berostyle_sys_logs') || '[]');
-            }
-        };
-
-        /* --- 2. TOAST NOTIFICATION MANAGER --- */
+        /* --- 1. TOAST NOTIFICATION MANAGER --- */
         const Toast = {
             show: function(message, type = 'normal', duration = 3000) {
                 const container = document.getElementById('toast-container');
@@ -1323,7 +1267,7 @@
             }
         };
 
-        /* --- 3. ADVANCED HYBRID DATABASE ENGINE --- */
+        /* --- 2. ADVANCED HYBRID DATABASE ENGINE --- */
         const DatabaseEngine = {
             dbRef: null,
             isFirebaseActive: false,
@@ -1430,11 +1374,11 @@
                     users[un].status = 'onaylı';
                     localStorage.setItem('berostyle_users_db', JSON.stringify(users));
                     if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users/' + un + '/status').set('onaylı');
-                    Logger.log(`Kullanıcı onaylandı: ${un}`);
                     return true;
                 }
                 return false;
             },
+            // COMPLETE MEMBER DELETION & BAN SYSTEM
             deleteUser: function(un) {
                 let users = this.getLocalUsers();
                 if (users[un]) {
@@ -1442,7 +1386,6 @@
                     localStorage.setItem('berostyle_users_db', JSON.stringify(users));
                     if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users/' + un).remove();
                     this.deleteStory(un);
-                    Logger.log(`Kullanıcı ağdan silindi/banlandı: ${un}`);
                     return true;
                 }
                 return false;
@@ -1452,7 +1395,6 @@
                 let stories = this.getLocalStories(); stories[st.username] = st;
                 localStorage.setItem('berostyle_stories_db', JSON.stringify(stories));
                 if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('stories/' + st.username).set(st);
-                Logger.log(`Yeni hikaye paylaşıldı: ${st.username}`);
             },
             deleteStory: function(un) {
                 let stories = this.getLocalStories();
@@ -1460,7 +1402,6 @@
                     delete stories[un];
                     localStorage.setItem('berostyle_stories_db', JSON.stringify(stories));
                     if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('stories/' + un).remove();
-                    Logger.log(`Hikaye silindi: ${un}`);
                     return true;
                 }
                 return false;
@@ -1475,12 +1416,11 @@
                 let msgs = this.getMessages(roomId);
                 msgs = msgs.filter(m => m.id !== msgId);
                 localStorage.setItem('chat_' + roomId, JSON.stringify(msgs));
-                Logger.log(`Mesaj silindi (Oda: ${roomId})`);
                 return true;
             }
         };
 
-        /* --- 4. MASTER APPLICATION CONTROLLER --- */
+        /* --- 3. MASTER APPLICATION CONTROLLER --- */
         const AppController = {
             currentUser: null,
             authMode: 'login',
@@ -1548,7 +1488,6 @@
                     else { admin.status = 'onaylı'; admin.isAdmin = true; }
                     this.currentUser = admin;
                     localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
-                    Logger.log("Kurucu oturum açtı (beratozer)");
                     Toast.show("Kurucu (Admin) olarak giriş yapıldı! ⚡", "success");
                     this.switchScreen('screen-auth', 'app-screen');
                     this.launchApp();
@@ -1558,7 +1497,6 @@
                 if (uObj && uObj.password === pw) {
                     this.currentUser = uObj;
                     localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
-                    Logger.log(`Üye oturum açtı: ${un}`);
                     Toast.show("Tekrardan hoş geldin kanka! 🚀", "success");
                     this.switchScreen('screen-auth', 'app-screen');
                     this.launchApp();
@@ -1603,45 +1541,31 @@
                 DatabaseEngine.saveUser(this.tempRegUser);
                 this.currentUser = this.tempRegUser;
                 localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
-                Logger.log(`Yeni hesap oluşturuldu: ${this.currentUser.username}`);
                 Toast.show("Kayıt tamamlandı! Aramıza hoş geldin. ⚡", "success");
                 this.switchScreen('screen-pp', 'app-screen');
                 this.launchApp();
             },
 
-            // TWITTER / X STYLE VERIFICATION BADGE GENERATOR
-            getBadgeHtml: function(userObj) {
-                if (userObj.username === 'beratozer' || userObj.isAdmin) {
-                    return `<span class="verified-badge badge-gold" title="Kurucu Hesap">👑</span>`;
-                } else if (userObj.status === 'onaylı') {
-                    return `<span class="verified-badge badge-blue" title="Onaylı Üye">✔</span>`;
-                } else {
-                    return `<span style="font-size:0.8rem; color:var(--text-muted);" title="Onay Bekliyor">⏳</span>`;
-                }
-            },
-
             launchApp: function() {
-                const myBadge = this.getBadgeHtml(this.currentUser);
-                document.getElementById('profile-username-display').innerHTML = `${this.currentUser.username} ${myBadge}`;
-                
+                document.getElementById('profile-username-display').innerHTML = `${this.currentUser.username} <span class="admin-badge-icon hidden" id="admin-badge">KURUCU</span>`;
                 const pImg = document.getElementById('profile-avatar-img');
                 const pBox = document.getElementById('profile-avatar-box');
+                
                 if (this.currentUser.ppUrl) {
                     pImg.src = this.currentUser.ppUrl; pImg.style.display = 'block'; pBox.classList.remove('pp-display-style');
                 } else {
                     pImg.style.display = 'none'; pBox.classList.add('pp-display-style');
                 }
 
-                // STRICT ISOLATION FOR ORDINARY ACCOUNTS (REMOVES PANEL COMPLETELEY)
                 const statusEl = document.getElementById('profile-status-display');
                 const adminSec = document.getElementById('admin-section');
+                const adminBadge = document.getElementById('admin-badge');
 
                 if (this.currentUser.username === 'beratozer' || this.currentUser.isAdmin) {
                     statusEl.innerText = "Durum: KURUCU (ADMİN)"; statusEl.className = "profile-status-label approved";
-                    adminSec.classList.remove('hidden');
-                    this.renderSystemLogs();
+                    adminSec.classList.remove('hidden'); adminBadge.classList.remove('hidden');
                 } else {
-                    adminSec.classList.add('hidden'); // Fully hide admin panel
+                    adminSec.classList.add('hidden'); adminBadge.classList.add('hidden');
                     statusEl.innerText = (this.currentUser.status === 'onaylı') ? "Durum: ONAYLI ÜYE" : "Durum: ONAY BEKLİYOR";
                     statusEl.className = (this.currentUser.status === 'onaylı') ? "profile-status-label approved" : "profile-status-label pending";
                 }
@@ -1649,24 +1573,6 @@
             },
 
             refreshUI: function() { this.renderUserLists(); this.renderStories(); },
-
-            renderSystemLogs: function() {
-                if (!this.currentUser || !this.currentUser.isAdmin) return;
-                const dom = document.getElementById('system-logs-dom');
-                if (!dom) return;
-                const logs = Logger.getLogs();
-                dom.innerHTML = '';
-                if(logs.length === 0) {
-                    dom.innerHTML = `<span style="color:#555;">Henüz kaydedilen aktivite yok...</span>`;
-                    return;
-                }
-                logs.forEach(l => {
-                    const el = document.createElement('div');
-                    el.className = 'log-entry';
-                    el.innerText = l;
-                    dom.appendChild(el);
-                });
-            },
 
             renderUserLists: function() {
                 const users = DatabaseEngine.getLocalUsers();
@@ -1681,14 +1587,15 @@
                     const u = users[un];
                     let avHtml = u.ppUrl ? `<img src="${u.ppUrl}" class="user-avatar">` : `<div class="user-avatar pp-display-style"></div>`;
                     let avMini = u.ppUrl ? `<img src="${u.ppUrl}" class="user-avatar" style="width:42px;height:42px;">` : `<div class="user-avatar pp-display-style" style="width:42px;height:42px;"></div>`;
-                    let badge = this.getBadgeHtml(u);
 
                     if (u.status === 'onaylı' || u.isAdmin) {
                         if (u.username !== this.currentUser.username) {
                             approvedCount++;
+                            let badge = u.isAdmin ? `<span style="color:var(--neon-cyan); font-size:0.7rem; font-weight:bold;">⚡ Kurucu</span>` : `<span style="color:var(--text-muted); font-size:0.75rem;">Onaylı Üye</span>`;
+                            
                             const item = document.createElement('div'); item.className = 'user-item';
                             item.innerHTML = `
-                                <div class="user-meta">${avHtml}<div class="user-name-box"><h4>${u.username} ${badge}</h4></div></div>
+                                <div class="user-meta">${avHtml}<div class="user-name-box"><h4>${u.username}</h4>${badge}</div></div>
                                 <button class="dm-action-btn" onclick="AppController.openChatRoom('${u.username}', '${u.ppUrl}')">Mesaj At</button>
                             `;
                             activeDom.appendChild(item);
@@ -1697,7 +1604,7 @@
                             if(this.currentUser.isAdmin) {
                                 const adminItem = document.createElement('div'); adminItem.className = 'user-item';
                                 adminItem.innerHTML = `
-                                    <div class="user-meta">${avMini}<div class="user-name-box"><h4>${u.username} ${badge}</h4><p style="color:var(--neon-green); font-size:0.75rem;">Aktif Ağ Üyesi</p></div></div>
+                                    <div class="user-meta">${avMini}<div class="user-name-box"><h4>${u.username}</h4><p style="color:var(--neon-green); font-size:0.75rem;">Aktif Ağ Üyesi</p></div></div>
                                     <button class="ban-btn" onclick="AppController.deleteUserAction('${u.username}')">HESABI SİL / BANLA</button>
                                 `;
                                 approvedAdminDom.appendChild(adminItem);
@@ -1707,7 +1614,7 @@
                         pendingCount++;
                         const item = document.createElement('div'); item.className = 'user-item';
                         item.innerHTML = `
-                            <div class="user-meta">${avMini}<div class="user-name-box"><h4>${u.username} ${badge}</h4><p style="color:var(--neon-yellow); font-size:0.75rem;">Onay bekliyor...</p></div></div>
+                            <div class="user-meta">${avMini}<div class="user-name-box"><h4>${u.username}</h4><p style="color:var(--neon-yellow); font-size:0.75rem;">Onay bekliyor...</p></div></div>
                             <div class="admin-action-btn-group">
                                 <button class="approve-btn" onclick="AppController.approveUserAction('${u.username}')">ONAYLA</button>
                                 <button class="reject-btn" onclick="AppController.deleteUserAction('${u.username}')">REDDET</button>
@@ -1724,6 +1631,7 @@
                 if (DatabaseEngine.approveUser(un)) { Toast.show(`${un} onaylandı! ⚡`, "success"); this.refreshUI(); }
             },
 
+            // GOD-MODE MEMBER BAN / DELETION
             deleteUserAction: function(un) {
                 if (confirm(`${un} kullanıcısını ağdan tamamen silmek ve banlamak istediğine emin misin kanka?`)) {
                     if (DatabaseEngine.deleteUser(un)) {
@@ -1788,6 +1696,7 @@
                 if (stObj.avatar) { avImg.src = stObj.avatar; avImg.style.display = 'block'; avBox.classList.remove('pp-display-style'); }
                 else { avImg.style.display = 'none'; avBox.classList.add('pp-display-style'); }
 
+                // SHOW STORY DELETE BUTTON IF IT'S YOURS OR IF YOU ARE ADMIN
                 const delBtn = document.getElementById('story-delete-btn-dom');
                 if (stObj.username === this.currentUser.username || this.currentUser.isAdmin) delBtn.classList.add('active');
                 else delBtn.classList.remove('active');
@@ -1870,6 +1779,7 @@
                     let delHint = isMe ? `<span class="msg-delete-hint">Çift tıkla sil</span>` : '';
                     b.innerHTML = `${delHint}${m.text} <span class="msg-time">${m.time || ''}</span>`;
                     
+                    // DOUBLE CLICK TO DELETE MESSAGE
                     if(isMe || this.currentUser.isAdmin) {
                         b.ondblclick = () => this.deleteMessageAction(roomId, m.id);
                     }
