@@ -588,6 +588,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            cursor: pointer;
         }
 
         .user-avatar {
@@ -1069,6 +1070,36 @@
         }
 
         .story-delete-btn.active { display: flex; }
+
+        /* ==========================================================================
+           14. PROFILE INSPECTION MODAL (INSTAGRAM STYLE)
+           ========================================================================== */
+        .profile-modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 300; display: none;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .profile-modal-card {
+            width: 100%; max-width: 380px;
+            background: var(--card-bg); border: 1px solid var(--border-base);
+            border-radius: 24px; padding: 24px; text-align: center;
+            position: relative; box-shadow: 0 15px 35px rgba(0,242,254,0.15);
+        }
+        .profile-modal-close {
+            position: absolute; top: 16px; right: 20px; font-size: 1.8rem;
+            color: var(--text-muted); cursor: pointer;
+        }
+        .stats-row {
+            display: flex; justify-content: space-around; margin: 20px 0;
+            border-top: 1px solid var(--border-base); border-bottom: 1px solid var(--border-base);
+            padding: 12px 0;
+        }
+        .stat-item h5 { font-size: 1.1rem; color: var(--text-pure); font-weight: 800; }
+        .stat-item span { font-size: 0.75rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -1110,7 +1141,7 @@
             <p class="welcome-msg" id="greet-msg">Sisteme erişmek için bilgilerini gir.</p>
             
             <div class="input-group">
-                <input type="text" id="auth-username" class="custom-input" placeholder="Kullanıcı adınız..." autocomplete="off">
+                <input type="text" id="auth-username" class="custom-input" placeholder="Kullanıcı adınız (küçük harf, boşluksuz)..." autocomplete="off" oninput="AppController.formatUsernameInput(this)">
                 <input type="password" id="auth-password" class="custom-input" placeholder="Şifreniz...">
             </div>
             
@@ -1223,12 +1254,12 @@
         <div id="chat-room" class="chat-overlay">
             <div class="chat-header">
                 <span class="chat-back-btn" onclick="AppController.closeChatRoom()">◀</span>
-                <div class="user-avatar pp-display-style" id="chat-target-avatar-box" style="width:42px; height:42px;">
+                <div class="user-avatar pp-display-style" id="chat-target-avatar-box" style="width:42px; height:42px; cursor:pointer;" onclick="AppController.openProfileModal(AppController.activeChatTarget)">
                     <img src="" id="chat-target-avatar-img" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
                 </div>
-                <div>
+                <div style="cursor:pointer;" onclick="AppController.openProfileModal(AppController.activeChatTarget)">
                     <h4 id="chat-target-name-display" style="color:var(--neon-cyan); font-size:1.05rem;">Kullanıcı</h4>
-                    <span style="font-size:0.7rem; color:var(--neon-green); font-weight:700;">● Çevrimiçi</span>
+                    <span id="chat-target-status-display" style="font-size:0.7rem; color:var(--neon-green); font-weight:700;">● Çevrimiçi</span>
                 </div>
             </div>
             
@@ -1272,17 +1303,44 @@
             </button>
         </div>
 
+        <!-- ==========================================================================
+           OVERLAY 3: INSTAGRAM PROFILE INSPECTION MODAL
+           ========================================================================== -->
+        <div id="profile-inspect-modal" class="profile-modal">
+            <div class="profile-modal-card">
+                <span class="profile-modal-close" onclick="AppController.closeProfileModal()">&times;</span>
+                <div class="user-avatar pp-display-style" id="inspect-avatar-box" style="width:84px; height:84px; margin: 0 auto 12px auto; border:2px solid var(--neon-cyan);">
+                    <img id="inspect-avatar-img" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                </div>
+                <h3 id="inspect-username" style="color:var(--text-pure); font-size:1.3rem; margin-bottom:4px; display:flex; justify-content:center; align-items:center; gap:6px;">kullanici</h3>
+                <p id="inspect-bio" style="color:var(--text-muted); font-size:0.8rem; margin-bottom:12px;">BEROSTYLE Ağı Üyesi ✨</p>
+                
+                <div class="stats-row">
+                    <div class="stat-item"><h5 id="inspect-posts">1</h5><span>Gönderi</span></div>
+                    <div class="stat-item"><h5 id="inspect-followers">342</h5><span>Takipçi</span></div>
+                    <div class="stat-item"><h5 id="inspect-following">280</h5><span>Takip</span></div>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <button class="action-btn" style="margin-top:0; padding:12px;" onclick="Toast.show('Takip isteği gönderildi! 🌟', 'success')">Takip Et</button>
+                    <button class="dm-action-btn" style="flex:1; border-radius:16px; font-size:1rem;" onclick="AppController.closeProfileModal(); AppController.openChatRoom(AppController.inspectingUser, AppController.inspectingPp)">Mesaj</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
         /**
          * ============================================================================
-         * BEROSTYLE CORE ENGINE (v5.0 ULTIMATE TITAN EDITION)
+         * BEROSTYLE CORE ENGINE (v5.1 ULTIMATE TITAN EDITION)
          * - Zero Admin Panel Leakage for Ordinary Users
          * - Twitter/X Style Verification Badges (Gold for Founder, Blue for Approved)
          * - WhatsApp Double-Click Deletion, Emoji Bar, Story Garbage Collector
-         * - Advanced System Activity Logging
-         * - Seamless Auto-Login (Bypass Login Screens on Re-open)
+         * - Advanced System Activity Logging & Real-Time Last Seen Engine
+         * - Seamless Auto-Login & Instagram Strict Username Validator (No Spaces/TR)
+         * - Read Receipt Fix (No Sticky Red Notification Badges)
+         * - Profile Inspection Modal (Followers, Following, Bio)
          * ============================================================================
          */
 
@@ -1345,6 +1403,7 @@
             seedInitialUsers: function() {
                 let users = this.getLocalUsers();
                 if (!users || Object.keys(users).length === 0) {
+                    const now = Date.now();
                     users = {
                         "beratozer": {
                             username: "beratozer",
@@ -1352,7 +1411,9 @@
                             gender: "male",
                             ppUrl: "",
                             status: "onaylı",
-                            isAdmin: true
+                            isAdmin: true,
+                            lastSeen: now,
+                            followers: 1420, following: 12
                         },
                         "kardelenamabendelmem": {
                             username: "kardelenamabendelmem",
@@ -1360,7 +1421,9 @@
                             gender: "female",
                             ppUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
                             status: "onaylı",
-                            isAdmin: false
+                            isAdmin: false,
+                            lastSeen: now - 120000,
+                            followers: 840, following: 310
                         },
                         "mert_kral": {
                             username: "mert_kral",
@@ -1368,7 +1431,9 @@
                             gender: "male",
                             ppUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
                             status: "onaylı",
-                            isAdmin: false
+                            isAdmin: false,
+                            lastSeen: now - 3600000,
+                            followers: 430, following: 400
                         },
                         "ali_yilmaz": {
                             username: "ali_yilmaz",
@@ -1376,7 +1441,9 @@
                             gender: "male",
                             ppUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
                             status: "onaylı",
-                            isAdmin: false
+                            isAdmin: false,
+                            lastSeen: now - 50000,
+                            followers: 512, following: 180
                         },
                         "zeynep_su": {
                             username: "zeynep_su",
@@ -1384,7 +1451,9 @@
                             gender: "female",
                             ppUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
                             status: "onaylı",
-                            isAdmin: false
+                            isAdmin: false,
+                            lastSeen: now - 86400000,
+                            followers: 920, following: 210
                         },
                         "burak_pro": {
                             username: "burak_pro",
@@ -1392,7 +1461,9 @@
                             gender: "male",
                             ppUrl: "",
                             status: "bekliyor",
-                            isAdmin: false
+                            isAdmin: false,
+                            lastSeen: now - 10000,
+                            followers: 120, following: 150
                         }
                     };
                     localStorage.setItem('berostyle_users_db', JSON.stringify(users));
@@ -1425,6 +1496,13 @@
                 if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users/' + u.username).set(u);
             },
             getUser: function(un) { return this.getLocalUsers()[un] || null; },
+            updateLastSeen: function(un) {
+                let users = this.getLocalUsers();
+                if (users[un]) {
+                    users[un].lastSeen = Date.now();
+                    localStorage.setItem('berostyle_users_db', JSON.stringify(users));
+                }
+            },
             approveUser: function(un) {
                 let users = this.getLocalUsers();
                 if (users[un]) {
@@ -1478,6 +1556,19 @@
                 localStorage.setItem('chat_' + roomId, JSON.stringify(msgs));
                 Logger.log(`Mesaj silindi (Oda: ${roomId})`);
                 return true;
+            },
+            markRoomAsRead: function(roomId, currentUser) {
+                let msgs = this.getMessages(roomId);
+                let changed = false;
+                msgs.forEach(m => {
+                    if (m.sender !== currentUser && !m.read) {
+                        m.read = true;
+                        changed = true;
+                    }
+                });
+                if (changed) {
+                    localStorage.setItem('chat_' + roomId, JSON.stringify(msgs));
+                }
             }
         };
 
@@ -1489,6 +1580,8 @@
             activeStoryViewing: null,
             storyTimer: null,
             tempPPData: '',
+            inspectingUser: '',
+            inspectingPp: '',
 
             init: function() {
                 DatabaseEngine.init();
@@ -1498,13 +1591,26 @@
                     const freshUser = DatabaseEngine.getUser(parsed.username);
                     if (freshUser) {
                         this.currentUser = freshUser;
-                        // Hızlı, şifresiz ve otomatik geçiş için direkt uygulama ekranına atıyoruz
+                        DatabaseEngine.updateLastSeen(this.currentUser.username);
                         this.switchScreen('screen-gender', 'app-screen');
                         this.launchApp();
                         return;
                     }
                 }
                 this.switchAuthTab('login');
+            },
+
+            // INSTAGRAM REGEX USERNAME VALIDATOR (No Spaces, No TR chars, only lowercase, numbers, _ and .)
+            formatUsernameInput: function(inputEl) {
+                let val = inputEl.value;
+                val = val.replace(/ğ/g, 'g').replace(/Ğ/g, 'g')
+                         .replace(/ü/g, 'u').replace(/Ü/g, 'u')
+                         .replace(/ş/g, 's').replace(/Ş/g, 's')
+                         .replace(/ı/g, 'i').replace(/İ/g, 'i')
+                         .replace(/ö/g, 'o').replace(/Ö/g, 'o')
+                         .replace(/ç/g, 'c').replace(/Ç/g, 'c');
+                val = val.toLowerCase().replace(/[^a-z0-9_.]/g, '');
+                inputEl.value = val;
             },
 
             switchScreen: function(fromId, toId) {
@@ -1542,7 +1648,7 @@
             },
 
             processAuth: function() {
-                const uIn = document.getElementById('auth-username').value.trim().toLowerCase();
+                const uIn = document.getElementById('auth-username').value.trim();
                 const pIn = document.getElementById('auth-password').value.trim();
                 if (!uIn || !pIn) return Toast.show("Lütfen alanları boş bırakma kanka!", "error");
                 if (this.authMode === 'login') this.executeLogin(uIn, pIn); else this.executeRegister(uIn, pIn);
@@ -1551,9 +1657,10 @@
             executeLogin: function(un, pw) {
                 if (un === 'beratozer' && pw === 'babanız') {
                     let admin = DatabaseEngine.getUser('beratozer');
-                    if (!admin) admin = { username: "beratozer", password: "babanız", gender: "male", ppUrl: "", status: "onaylı", isAdmin: true };
+                    if (!admin) admin = { username: "beratozer", password: "babanız", gender: "male", ppUrl: "", status: "onaylı", isAdmin: true, followers: 1420, following: 12 };
                     else { admin.status = 'onaylı'; admin.isAdmin = true; }
                     this.currentUser = admin;
+                    DatabaseEngine.updateLastSeen(admin.username);
                     localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
                     Logger.log("Kurucu oturum açtı (beratozer)");
                     Toast.show("Kurucu (Admin) olarak giriş yapıldı! ⚡", "success");
@@ -1564,6 +1671,7 @@
                 const uObj = DatabaseEngine.getUser(un);
                 if (uObj && uObj.password === pw) {
                     this.currentUser = uObj;
+                    DatabaseEngine.updateLastSeen(uObj.username);
                     localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
                     Logger.log(`Üye oturum açtı: ${un}`);
                     Toast.show("Tekrardan hoş geldin kanka! 🚀", "success");
@@ -1576,7 +1684,10 @@
                 if (DatabaseEngine.getUser(un)) return Toast.show("Bu kullanıcı adı zaten alınmış!", "error");
                 this.tempRegUser = {
                     username: un, password: pw, gender: this.tempGender || 'male', ppUrl: '',
-                    status: (un === 'beratozer') ? 'onaylı' : 'bekliyor', isAdmin: (un === 'beratozer')
+                    status: (un === 'beratozer') ? 'onaylı' : 'bekliyor', isAdmin: (un === 'beratozer'),
+                    lastSeen: Date.now(),
+                    followers: Math.floor(Math.random() * 300) + 50,
+                    following: Math.floor(Math.random() * 250) + 50
                 };
                 Toast.show("Harika! Şimdi profil resmini ayarlayalım.", "success");
                 this.switchScreen('screen-auth', 'screen-pp');
@@ -1627,6 +1738,19 @@
                 }
             },
 
+            // REAL-TIME LAST SEEN FORMATTER
+            formatLastSeen: function(timestamp) {
+                if (!timestamp) return "Çevrimdışı";
+                const diff = Date.now() - timestamp;
+                if (diff < 180000) return `<span style="color:var(--neon-green);">● Çevrimiçi</span>`;
+                const mins = Math.floor(diff / 60000);
+                if (mins < 60) return `${mins} dk önce aktifti`;
+                const hours = Math.floor(mins / 60);
+                if (hours < 24) return `${hours} saat önce aktifti`;
+                const date = new Date(timestamp);
+                return `Son görülme: ${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            },
+
             launchApp: function() {
                 const myBadge = this.getBadgeHtml(this.currentUser);
                 document.getElementById('profile-username-display').innerHTML = `${this.currentUser.username} ${myBadge}`;
@@ -1655,7 +1779,11 @@
                 this.refreshUI();
             },
 
-            refreshUI: function() { this.renderUserLists(); this.renderStories(); },
+            refreshUI: function() { 
+                if(this.currentUser) DatabaseEngine.updateLastSeen(this.currentUser.username);
+                this.renderUserLists(); 
+                this.renderStories(); 
+            },
 
             renderSystemLogs: function() {
                 if (!this.currentUser || !this.currentUser.isAdmin) return;
@@ -1689,32 +1817,45 @@
                     let avHtml = u.ppUrl ? `<img src="${u.ppUrl}" class="user-avatar">` : `<div class="user-avatar pp-display-style"></div>`;
                     let avMini = u.ppUrl ? `<img src="${u.ppUrl}" class="user-avatar" style="width:42px;height:42px;">` : `<div class="user-avatar pp-display-style" style="width:42px;height:42px;"></div>`;
                     let badge = this.getBadgeHtml(u);
+                    let lastSeenText = this.formatLastSeen(u.lastSeen);
 
                     if (u.status === 'onaylı' || u.isAdmin) {
                         if (u.username !== this.currentUser.username) {
                             approvedCount++;
                             
-                            // DM MESAJ SAYISI / KIRMZI BİLDİRİM RAKAMI HESAPLAMA
+                            // DM MESAJ SAYISI / KIRMZI BİLDİRİM RAKAMI HESAPLAMA (SADECE OKUNMAMIŞLAR)
                             const msgs = DatabaseEngine.getMessages(this.getRoomId(this.currentUser.username, u.username));
-                            const unreadCount = msgs.length;
+                            const unreadCount = msgs.filter(m => m.sender !== this.currentUser.username && !m.read).length;
                             let notificationHtml = unreadCount > 0 ? `<div style="background:red; color:white; border-radius:50%; width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:bold; margin-right:8px;">${unreadCount}</div>` : '';
 
                             const item = document.createElement('div'); item.className = 'user-item';
                             item.innerHTML = `
-                                <div class="user-meta">${avHtml}<div class="user-name-box"><h4>${u.username} ${badge}</h4></div></div>
+                                <div class="user-meta" onclick="AppController.openProfileModal('${u.username}', '${u.ppUrl || ''}')">
+                                    ${avHtml}
+                                    <div class="user-name-box">
+                                        <h4>${u.username} ${badge}</h4>
+                                        <span style="font-size:0.72rem; color:var(--text-muted);">${lastSeenText}</span>
+                                    </div>
+                                </div>
                                 <div style="display:flex; align-items:center;">
                                     ${notificationHtml}
-                                    <button class="dm-action-btn" onclick="AppController.openChatRoom('${u.username}', '${u.ppUrl}')">Mesaj At</button>
+                                    <button class="dm-action-btn" onclick="AppController.openChatRoom('${u.username}', '${u.ppUrl || ''}')">Mesaj At</button>
                                 </div>
                             `;
                             activeDom.appendChild(item);
 
-                            // ADMIN DELETE/BAN PANEL FOR APPROVED MEMBERS
+                            // ADMIN DELETE/BAN PANEL FOR APPROVED MEMBERS (TÜMÜ GÖRÜNÜR)
                             if(this.currentUser.isAdmin) {
                                 const adminItem = document.createElement('div'); adminItem.className = 'user-item';
                                 adminItem.innerHTML = `
-                                    <div class="user-meta">${avMini}<div class="user-name-box"><h4>${u.username} ${badge}</h4><p style="color:var(--neon-green); font-size:0.75rem;">Aktif Ağ Üyesi</p></div></div>
-                                    <button class="ban-btn" onclick="AppController.deleteUserAction('${u.username}')">HESABI SİL / BANLA</button>
+                                    <div class="user-meta" onclick="AppController.openProfileModal('${u.username}', '${u.ppUrl || ''}')">
+                                        ${avMini}
+                                        <div class="user-name-box">
+                                            <h4>${u.username} ${badge}</h4>
+                                            <p style="color:var(--neon-green); font-size:0.75rem;">Aktif • ${lastSeenText}</p>
+                                        </div>
+                                    </div>
+                                    <button class="ban-btn" onclick="AppController.deleteUserAction('${u.username}')">HESABI SİL</button>
                                 `;
                                 approvedAdminDom.appendChild(adminItem);
                             }
@@ -1723,7 +1864,13 @@
                         pendingCount++;
                         const item = document.createElement('div'); item.className = 'user-item';
                         item.innerHTML = `
-                            <div class="user-meta">${avMini}<div class="user-name-box"><h4>${u.username} ${badge}</h4><p style="color:var(--neon-yellow); font-size:0.75rem;">Onay bekliyor...</p></div></div>
+                            <div class="user-meta" onclick="AppController.openProfileModal('${u.username}', '${u.ppUrl || ''}')">
+                                ${avMini}
+                                <div class="user-name-box">
+                                    <h4>${u.username} ${badge}</h4>
+                                    <p style="color:var(--neon-yellow); font-size:0.75rem;">Onay bekliyor...</p>
+                                </div>
+                            </div>
                             <div class="admin-action-btn-group">
                                 <button class="approve-btn" onclick="AppController.approveUserAction('${u.username}')">ONAYLA</button>
                                 <button class="reject-btn" onclick="AppController.deleteUserAction('${u.username}')">REDDET</button>
@@ -1733,7 +1880,7 @@
                     }
                 }
                 if (approvedCount === 0) activeDom.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:20px;">Ağda başka onaylı üye yok.</p>`;
-                if (pendingCount === 0) pendingDom.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:10px;">Bekleyen istek yok şef.</p>`;
+                if (pendingCount === 0 && pendingDom) pendingDom.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:10px;">Bekleyen istek yok şef.</p>`;
             },
 
             approveUserAction: function(un) {
@@ -1754,6 +1901,32 @@
                 document.querySelectorAll('#active-users-dom .user-item').forEach(it => {
                     it.style.display = it.querySelector('h4').innerText.toLowerCase().includes(q) ? 'flex' : 'none';
                 });
+            },
+
+            // --- PROFILE INSPECTION MODAL (INSTAGRAM STYLE) ---
+            openProfileModal: function(un, ppUrl) {
+                const u = DatabaseEngine.getUser(un);
+                if (!u) return;
+                this.inspectingUser = un;
+                this.inspectingPp = ppUrl;
+
+                document.getElementById('inspect-username').innerHTML = `${u.username} ${this.getBadgeHtml(u)}`;
+                document.getElementById('inspect-followers').innerText = u.followers || Math.floor(Math.random() * 500) + 100;
+                document.getElementById('inspect-following').innerText = u.following || Math.floor(Math.random() * 300) + 50;
+                
+                const stories = DatabaseEngine.getLocalStories();
+                document.getElementById('inspect-posts').innerText = stories[un] ? '1' : '0';
+
+                const box = document.getElementById('inspect-avatar-box');
+                const img = document.getElementById('inspect-avatar-img');
+                if (u.ppUrl) { img.src = u.ppUrl; img.style.display = 'block'; box.classList.remove('pp-display-style'); }
+                else { img.style.display = 'none'; box.classList.add('pp-display-style'); }
+
+                document.getElementById('profile-inspect-modal').style.display = 'flex';
+            },
+
+            closeProfileModal: function() {
+                document.getElementById('profile-inspect-modal').style.display = 'none';
             },
 
             // --- STORY MODULE WITH DELETION ---
@@ -1829,15 +2002,24 @@
                 }
             },
 
-            // --- REAL-TIME CHAT WITH EMOJIS & DOUBLE-CLICK MESSAGE DELETION ---
+            // --- REAL-TIME CHAT WITH EMOJIS, LAST SEEN & READ RECEIPT FIX ---
             openChatRoom: function(tUser, tPp) {
                 if (this.currentUser.status !== 'onaylı' && !this.currentUser.isAdmin) return Toast.show("Onaylanmayan hesaplar mesaj atamaz!", "error");
                 this.activeChatTarget = tUser;
                 document.getElementById('chat-target-name-display').innerText = tUser;
+                
+                const uObj = DatabaseEngine.getUser(tUser);
+                document.getElementById('chat-target-status-display').innerHTML = uObj ? this.formatLastSeen(uObj.lastSeen) : 'Çevrimdışı';
+
                 const avBox = document.getElementById('chat-target-avatar-box');
                 const avImg = document.getElementById('chat-target-avatar-img');
                 if (tPp && tPp !== 'undefined' && tPp !== '') { avImg.src = tPp; avImg.style.display = 'block'; avBox.classList.remove('pp-display-style'); }
                 else { avImg.style.display = 'none'; avBox.classList.add('pp-display-style'); }
+                
+                const roomId = this.getRoomId(this.currentUser.username, tUser);
+                // MESAJLARI OKUNDU OLARAK İŞARETLE (KIRMIZI BİLDİRİM RAKAMINI SİL)
+                DatabaseEngine.markRoomAsRead(roomId, this.currentUser.username);
+
                 document.getElementById('chat-room').classList.add('active');
                 this.renderMessages();
             },
@@ -1865,9 +2047,11 @@
                     id: 'msg_' + Date.now() + Math.random().toString(36).substr(2, 4),
                     sender: this.currentUser.username,
                     text: txt,
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    read: false // Yeni mesaj okundu işareti false başlar
                 };
                 DatabaseEngine.saveMessage(roomId, msgObj);
+                DatabaseEngine.updateLastSeen(this.currentUser.username);
                 f.value = ''; document.getElementById('emoji-bar-dom').classList.remove('active');
                 this.renderMessages();
             },
