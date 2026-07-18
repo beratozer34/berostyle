@@ -3,126 +3,1905 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BEROSTYLE v6.0</title>
+    <title>BEROSTYLE - Özel Arkadaş Grubu Ağı</title>
+    <!-- Firebase Legacy SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
-        :root { --bg-base: #020203; --neon-cyan: #00f2fe; --neon-red: #ff1744; --text-pure: #ffffff; }
-        body { background: #000; color: #fff; margin: 0; font-family: sans-serif; overflow: hidden; }
-        .phone-wrapper { width: 100vw; height: 100vh; max-width: 480px; margin: auto; background: var(--bg-base); position: relative; border-left: 1px solid #222; border-right: 1px solid #222; }
-        .screen { position: absolute; top:0; left:0; width:100%; height:100%; background: var(--bg-base); z-index:10; }
-        .hidden { display: none; }
-        .badge { background: #ff1744; color: #fff; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: 900; }
-        .verified-gold { color: gold; margin-left: 5px; }
-        .verified-blue { color: #1da1f2; margin-left: 5px; }
-        #toast-container { position: absolute; top: 20px; width: 100%; z-index: 9999; text-align: center; }
-        .toast { background: #111; border: 1px solid var(--neon-cyan); padding: 10px; margin: 5px; border-radius: 10px; }
+        /* ==========================================================================
+           1. CORE DESIGN SYSTEM & CSS VARIABLES
+           ========================================================================== */
+        :root {
+            --bg-base: #020203;
+            --panel-bg: #0b0c0f;
+            --card-bg: #111216;
+            --card-hover: #17181d;
+            --border-base: #1e2028;
+            --border-highlight: #2c2f3b;
+            --neon-cyan: #00f2fe;
+            --neon-cyan-dark: #00bcd4;
+            --neon-blue: #4facfe;
+            --neon-pink: #ff007f;
+            --neon-pink-dark: #c50062;
+            --neon-green: #00e676;
+            --neon-red: #ff1744;
+            --neon-yellow: #ffea00;
+            --gold-badge: #ffd700;
+            --blue-badge: #1da1f2;
+            --text-pure: #ffffff;
+            --text-muted: #8c909e;
+            --text-dark: #000000;
+            --font-stack: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            --shadow-neon: 0 0 25px rgba(0, 242, 254, 0.25);
+            --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-stack);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        body {
+            background-color: #000000;
+            color: var(--text-pure);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            height: 100vh;
+            height: -webkit-fill-available;
+            overflow: hidden;
+        }
+
+        /* ==========================================================================
+           2. MOBILE DEVICE CONTAINER & SCREEN MANAGEMENT
+           ========================================================================== */
+        .phone-wrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 480px;
+            background: var(--bg-base);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-base);
+            border-right: 1px solid var(--border-base);
+            box-shadow: 0 0 60px rgba(0, 242, 254, 0.08);
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-base);
+            z-index: 10;
+            transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.38s ease;
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            overflow-y: auto;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+            transform: translate3d(0, 25px, 0) scale(0.96);
+        }
+
+        /* ==========================================================================
+           3. ADVANCED TOAST NOTIFICATION SYSTEM
+           ========================================================================== */
+        #toast-container {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 420px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .toast-msg {
+            background: rgba(11, 12, 15, 0.96);
+            border: 1px solid var(--neon-cyan);
+            color: var(--text-pure);
+            padding: 16px 20px;
+            border-radius: 16px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            animation: toastSlideDown 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+            pointer-events: auto;
+            backdrop-filter: blur(12px);
+        }
+
+        .toast-msg.error {
+            border-color: var(--neon-red);
+            box-shadow: 0 10px 30px rgba(255, 23, 68, 0.3);
+        }
+
+        .toast-msg.success {
+            border-color: var(--neon-green);
+            box-shadow: 0 10px 30px rgba(0, 230, 118, 0.3);
+        }
+
+        @keyframes toastSlideDown {
+            from { transform: translateY(-40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* ==========================================================================
+           4. SHARED UI ELEMENTS, BUTTONS & FORMS
+           ========================================================================== */
+        h1.app-title {
+            font-size: 3.6rem;
+            font-weight: 900;
+            letter-spacing: 5px;
+            background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 26px;
+            text-shadow: 0 0 35px rgba(0, 242, 254, 0.4);
+            text-align: center;
+        }
+
+        .welcome-msg {
+            font-size: 1.15rem;
+            text-align: center;
+            margin-bottom: 32px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            padding: 0 12px;
+        }
+
+        .top-warning {
+            width: 100%;
+            background: rgba(0, 242, 254, 0.05);
+            border: 1px solid rgba(0, 242, 254, 0.25);
+            color: var(--neon-cyan);
+            padding: 14px 18px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        .input-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .custom-input {
+            width: 100%;
+            padding: 18px 22px;
+            background: var(--panel-bg);
+            border: 2px solid var(--border-base);
+            border-radius: 16px;
+            color: var(--text-pure);
+            font-size: 1rem;
+            transition: all 0.25s ease;
+        }
+
+        .custom-input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 18px rgba(0, 242, 254, 0.18);
+            background: #101116;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-cyan) 100%);
+            color: var(--text-dark);
+            font-size: 1.12rem;
+            font-weight: 800;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            margin-top: 22px;
+            box-shadow: 0 8px 25px rgba(0, 242, 254, 0.35);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .action-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 3px 12px rgba(0, 242, 254, 0.25);
+        }
+
+        /* ==========================================================================
+           5. GENDER SELECTION & AUTHENTICATION TABS
+           ========================================================================== */
+        .gender-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-top: 12px;
+        }
+
+        .gender-btn {
+            width: 100%;
+            padding: 22px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-male {
+            background: linear-gradient(90deg, rgba(0, 242, 254, 0.12) 0%, rgba(79, 172, 254, 0.12) 100%);
+            color: var(--neon-cyan);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.18);
+        }
+
+        .btn-female {
+            background: linear-gradient(90deg, rgba(255, 0, 127, 0.12) 0%, rgba(255, 88, 88, 0.12) 100%);
+            color: var(--neon-pink);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.18);
+        }
+
+        .gender-btn:active { transform: scale(0.96); }
+
+        .auth-tab-header {
+            display: flex;
+            width: 100%;
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 6px;
+            margin-bottom: 28px;
+            border: 1px solid var(--border-base);
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .auth-tab-btn.active {
+            background: var(--neon-cyan);
+            color: var(--text-dark);
+            box-shadow: 0 3px 15px rgba(0, 242, 254, 0.45);
+        }
+
+        /* ==========================================================================
+           6. PROFILE PICTURE (PP) UPLOAD & RENDER STYLE
+           ========================================================================== */
+        .pp-display-style {
+            background-color: #191b22;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23555a6a'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z'/%3E%3C/svg%3E");
+            background-size: 65% 65%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .pp-upload-circle {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            border: 3px dashed var(--neon-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 38px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 35px rgba(0, 242, 254, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .pp-upload-circle:active { transform: scale(0.95); }
+        .pp-upload-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+        .pp-upload-hint {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-cyan);
+            font-size: 0.78rem;
+            font-weight: 800;
+            padding: 8px 0;
+            text-align: center;
+        }
+
+        /* ==========================================================================
+           7. MAIN APPLICATION INTERFACE & TOP HEADER
+           ========================================================================== */
+        #app-screen {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: var(--bg-base);
+        }
+
+        .app-header {
+            width: 100%;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border-base);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(2, 2, 3, 0.92);
+            backdrop-filter: blur(15px);
+            z-index: 30;
+        }
+
+        .app-header h2 {
+            font-size: 1.75rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--neon-cyan);
+        }
+
+        .header-status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: pulseDot 1.5s infinite;
+        }
+
+        @keyframes pulseDot {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.4; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .main-content {
+            flex: 1;
+            width: 100%;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .tab-content {
+            width: 100%;
+            height: 100%;
+            display: none;
+            padding: 20px;
+            animation: fadeInTab 0.28s ease;
+        }
+
+        .tab-content.active { display: block; }
+
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==========================================================================
+           8. TAB 1: STORIES & 24-HOUR MEDIA STREAM
+           ========================================================================== */
+        .story-section {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .story-wall-scroll {
+            display: flex;
+            gap: 18px;
+            overflow-x: auto;
+            padding: 6px 4px 16px 4px;
+            width: 100%;
+            scrollbar-width: none;
+        }
+
+        .story-wall-scroll::-webkit-scrollbar { display: none; }
+
+        .story-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 78px;
+            cursor: pointer;
+        }
+
+        .story-ring {
+            width: 78px;
+            height: 78px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-blue), #0052d4);
+            padding: 3px;
+            position: relative;
+            box-shadow: 0 5px 18px rgba(0, 242, 254, 0.25);
+            transition: transform 0.2s ease;
+        }
+
+        .story-ring:active { transform: scale(0.92); }
+        .story-ring.no-story { background: var(--border-base); box-shadow: none; }
+
+        .story-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--bg-base);
+            object-fit: cover;
+        }
+
+        .story-add-badge {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 24px;
+            height: 24px;
+            background: var(--neon-cyan);
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 900;
+            border: 2px solid var(--bg-base);
+        }
+
+        .story-name {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 76px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 700;
+        }
+
+        .add-story-banner-btn {
+            width: 100%;
+            padding: 18px;
+            background: rgba(0, 242, 254, 0.05);
+            border: 2px dashed rgba(0, 242, 254, 0.4);
+            color: var(--neon-cyan);
+            font-weight: 800;
+            border-radius: 18px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 1rem;
+        }
+
+        .add-story-banner-btn:active { background: rgba(0, 242, 254, 0.12); transform: scale(0.98); }
+
+        /* ==========================================================================
+           9. TAB 2: DM LIST & MEMBER SEARCH MODULE
+           ========================================================================== */
+        .search-container {
+            width: 100%;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 18px 15px 46px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-base);
+            border-radius: 16px;
+            color: var(--text-pure);
+            font-size: 0.98rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus { border-color: var(--neon-cyan); }
+        
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.15rem;
+        }
+
+        .section-sub-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 18px;
+            transition: background 0.2s ease;
+        }
+
+        .user-item:active { background: var(--card-hover); }
+
+        .user-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 1px solid var(--border-base);
+        }
+
+        .user-name-box h4 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-pure);
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* TWITTER / X BADGE ENGINE */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .badge-gold {
+            background-color: var(--gold-badge);
+            color: #000;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+        }
+
+        .badge-blue {
+            background-color: var(--blue-badge);
+            color: #fff;
+            box-shadow: 0 0 8px rgba(29, 161, 242, 0.5);
+        }
+
+        .dm-action-btn {
+            padding: 10px 20px;
+            background: rgba(0, 242, 254, 0.12);
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dm-action-btn:active {
+            background: var(--neon-cyan);
+            color: #000;
+            transform: scale(0.95);
+        }
+
+        /* ==========================================================================
+           10. TAB 3: PROFILE & STRICTLY ISOLATED FOUNDER PANEL
+           ========================================================================== */
+        .profile-header-card {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            padding: 22px;
+            background: var(--card-bg);
+            border-radius: 22px;
+            border: 1px solid var(--border-base);
+            margin-bottom: 26px;
+        }
+
+        .profile-avatar-wrapper {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .profile-info-box h3 {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .profile-status-label {
+            display: inline-block;
+            font-size: 0.82rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+        }
+
+        .profile-status-label.approved {
+            background: rgba(0, 230, 118, 0.15);
+            color: var(--neon-green);
+        }
+
+        .profile-status-label.pending {
+            background: rgba(255, 234, 0, 0.15);
+            color: var(--neon-yellow);
+        }
+
+        /* ADMIN PANEL - MEMBER DELETION & BAN SYSTEM */
+        .admin-section {
+            width: 100%;
+            background: linear-gradient(180deg, rgba(0, 242, 254, 0.05) 0%, rgba(11, 12, 15, 0.95) 100%);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            border-radius: 22px;
+            padding: 22px;
+            margin-bottom: 26px;
+            box-shadow: 0 10px 35px rgba(0, 242, 254, 0.08);
+        }
+
+        .admin-header-title {
+            font-size: 1.1rem;
+            color: var(--neon-cyan);
+            font-weight: 900;
+            margin-bottom: 18px;
+            border-bottom: 1px solid rgba(0, 242, 254, 0.25);
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .admin-action-btn-group { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+        .approve-btn {
+            padding: 8px 16px;
+            background: var(--neon-cyan);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+
+        .reject-btn {
+            padding: 8px 14px;
+            background: rgba(255, 23, 68, 0.18);
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+
+        .ban-btn {
+            padding: 8px 16px;
+            background: var(--neon-red);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.82rem;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(255, 23, 68, 0.4);
+        }
+
+        .system-log-box {
+            background: #08090c;
+            border: 1px solid var(--border-base);
+            border-radius: 12px;
+            padding: 12px;
+            max-height: 140px;
+            overflow-y: auto;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .log-entry {
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            padding-bottom: 4px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 18px;
+            background: rgba(255, 23, 68, 0.12);
+            color: var(--neon-red);
+            border: 1px solid rgba(255, 23, 68, 0.45);
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:active { background: var(--neon-red); color: #fff; }
+
+        /* ==========================================================================
+           11. BOTTOM NAVIGATION BAR (INSTAGRAM ARCHITECTURE)
+           ========================================================================== */
+        .bottom-nav {
+            width: 100%;
+            height: 68px;
+            border-top: 1px solid var(--border-base);
+            display: flex;
+            background: rgba(4, 4, 6, 0.96);
+            backdrop-filter: blur(18px);
+            z-index: 30;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+            gap: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .nav-item.active { color: var(--neon-cyan); }
+        .nav-icon { font-size: 1.45rem; transition: transform 0.2s ease; }
+        .nav-item.active .nav-icon { transform: scale(1.18); }
+
+        /* ==========================================================================
+           12. REAL-TIME CHAT OVERLAY & WHATSAPP EMOJI BAR
+           ========================================================================== */
+        .chat-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-base);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transform: translate3d(100%, 0, 0);
+            transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .chat-overlay.active { transform: translate3d(0, 0, 0); }
+
+        .chat-header {
+            width: 100%;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-base);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--panel-bg);
+        }
+
+        .chat-back-btn {
+            font-size: 1.45rem;
+            cursor: pointer;
+            color: var(--neon-cyan);
+            padding: 4px 8px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .msg-bubble {
+            max-width: 78%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .msg-bubble:active { transform: scale(0.98); }
+
+        .msg-sent {
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-cyan) 100%);
+            color: #000;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            font-weight: 600;
+        }
+
+        .msg-received {
+            background: var(--card-bg);
+            border: 1px solid var(--border-base);
+            color: var(--text-pure);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-time {
+            font-size: 0.65rem;
+            opacity: 0.75;
+            margin-top: 5px;
+            text-align: right;
+            display: block;
+        }
+
+        .msg-delete-hint {
+            font-size: 0.6rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            position: absolute;
+            top: -16px;
+            right: 0;
+            color: var(--neon-red);
+            font-weight: bold;
+        }
+
+        .msg-bubble:hover .msg-delete-hint { opacity: 1; }
+
+        /* EMOJI SELECTOR BAR */
+        .emoji-bar {
+            display: none;
+            padding: 10px 15px;
+            background: #11131a;
+            border-top: 1px solid var(--border-base);
+            gap: 12px;
+            overflow-x: auto;
+        }
+
+        .emoji-bar.active { display: flex; }
+
+        .emoji-item {
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: transform 0.15s;
+        }
+
+        .emoji-item:active { transform: scale(1.3); }
+
+        .chat-input-area {
+            width: 100%;
+            padding: 14px 16px;
+            border-top: 1px solid var(--border-base);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--panel-bg);
+        }
+
+        .emoji-toggle-btn {
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 4px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 14px 18px;
+            background: #15161d;
+            border: 1px solid var(--border-base);
+            border-radius: 16px;
+            color: white;
+            font-size: 0.98rem;
+            outline: none;
+        }
+
+        .chat-input:focus { border-color: var(--neon-cyan); }
+
+        .chat-send-btn {
+            padding: 14px 22px;
+            background: var(--neon-cyan);
+            color: #000;
+            border: none;
+            border-radius: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .chat-send-btn:active { transform: scale(0.92); }
+
+        /* ==========================================================================
+           13. STORY VIEWER MODAL & DELETION SYSTEM
+           ========================================================================== */
+        .story-viewer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .story-viewer-progress {
+            width: 92%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            position: absolute;
+            top: 18px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .story-viewer-bar { height: 100%; width: 0%; background: var(--neon-cyan); }
+
+        .story-viewer-header {
+            position: absolute;
+            top: 32px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 201;
+        }
+
+        .story-viewer-close {
+            position: absolute;
+            top: 28px;
+            right: 20px;
+            font-size: 2.3rem;
+            color: #fff;
+            cursor: pointer;
+            z-index: 201;
+            padding: 0 10px;
+        }
+
+        .story-viewer-img {
+            width: 100%;
+            max-height: 82%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        .story-delete-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 20px;
+            background: rgba(255, 23, 68, 0.9);
+            color: #fff;
+            border: 2px solid #fff;
+            padding: 10px 18px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 0.88rem;
+            cursor: pointer;
+            z-index: 201;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 0 15px rgba(255, 23, 68, 0.6);
+        }
+
+        .story-delete-btn.active { display: flex; }
     </style>
 </head>
 <body>
-    <div id="toast-container"></div>
-    <div class="phone-wrapper" id="app">
-        <!-- Arayüzün devamı 2. ve 3. parçada gelecek -->
-        <script>
-        const App = {
-            users: JSON.parse(localStorage.getItem('berostyle_users_db') || '{}'),
+
+    <div class="phone-wrapper">
+        <!-- GLOBAL TOAST NOTIFICATION CONTAINER -->
+        <div id="toast-container"></div>
+
+        <!-- HIDDEN FILE SELECTORS -->
+        <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="AppController.handlePhotoSelected(event)">
+        <input type="file" id="story-file-input" accept="image/*" style="display: none;" onchange="AppController.handleStoryUpload(event)">
+
+        <!-- ==========================================================================
+           SCREEN 1: GENDER SELECTION
+           ========================================================================== -->
+        <div id="screen-gender" class="screen">
+            <h1 class="app-title">BEROSTYLE</h1>
+            <p class="welcome-msg">Özel arkadaş ağına katılmadan önce lütfen cinsiyetini belirle.</p>
+            <div class="gender-container">
+                <button class="gender-btn btn-male" onclick="AppController.selectGender('male')">Erkek</button>
+                <button class="gender-btn btn-female" onclick="AppController.selectGender('female')">Kız</button>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+           SCREEN 2: AUTHENTICATION TABS (LOGIN / REGISTER)
+           ========================================================================== -->
+        <div id="screen-auth" class="screen hidden">
+            <div class="top-warning">
+                ⚡ <b>Berat Özer Kuralları:</b> Telefon numarası ve E-Posta doğrulama zorunluluğu tamamen rafa kaldırılmıştır! Direkt giriş yapabilirsin.
+            </div>
+
+            <!-- TAB SWITCHER -->
+            <div class="auth-tab-header">
+                <div class="auth-tab-btn active" id="tab-btn-login" onclick="AppController.switchAuthTab('login')">GİRİŞ YAP</div>
+                <div class="auth-tab-btn" id="tab-btn-register" onclick="AppController.switchAuthTab('register')">YENİ KAYIT OLUŞTUR</div>
+            </div>
+
+            <p class="welcome-msg" id="greet-msg">Sisteme erişmek için bilgilerini gir.</p>
             
-            // Twitter/X Tarzı Rozet Engine
-            renderBadge: function(username, isAdmin, status) {
-                if (username === 'beratozer' || isAdmin) 
-                    return `<span class="verified-gold" title="Kurucu">👑</span>`;
-                if (status === 'onaylı') 
-                    return `<span class="verified-blue" title="Onaylı Üye">✔</span>`;
-                return `<span style="font-size:10px;">⏳</span>`;
-            },
+            <div class="input-group">
+                <input type="text" id="auth-username" class="custom-input" placeholder="Kullanıcı adınız..." autocomplete="off">
+                <input type="password" id="auth-password" class="custom-input" placeholder="Şifreniz...">
+            </div>
+            
+            <button class="action-btn" id="auth-submit-btn" onclick="AppController.processAuth()">Sisteme Giriş Yap</button>
+        </div>
 
-            // DM'deki Kırmızı Bildirim Sayısı
-            updateDMNotification: function(roomId, count) {
-                const badge = document.getElementById('badge-' + roomId);
-                if (badge) {
-                    badge.innerText = count > 0 ? count : '';
-                    badge.style.display = count > 0 ? 'inline-block' : 'none';
-                }
-            },
+        <!-- ==========================================================================
+           SCREEN 3: PROFILE PICTURE SELECTION
+           ========================================================================== -->
+        <div id="screen-pp" class="screen hidden">
+            <h1 class="app-title" style="font-size: 2.5rem;">PROFİL RESMİ</h1>
+            <p class="welcome-msg">Tıkla ve galerinden seni en iyi anlatan profil fotoğrafını seç.</p>
+            
+            <div class="pp-upload-circle pp-display-style" id="pp-upload-box" onclick="AppController.triggerFileSelect('pp')">
+                <img id="pp-preview-img" style="display:none;" alt="PP">
+                <div class="pp-upload-hint">DEĞİŞTİR</div>
+            </div>
 
-            // Mesaj Silme Fonksiyonu
-            deleteMessage: function(roomId, msgId) {
-                if (confirm("Mesajı silmek istiyor musun?")) {
-                    // Firebase ve LocalDB temizleme mantığı buraya
-                    console.log("Mesaj silindi: " + msgId);
-                }
-            },
+            <button class="action-btn" onclick="AppController.finishRegistration()">Ağa Giriş Yap ve Başla 🚀</button>
+        </div>
 
-            // Story Silme Fonksiyonu
-            deleteStory: function(storyId) {
-                if (confirm("Hikayeyi silmek istiyor musun?")) {
-                    // Hikaye temizleme mantığı
-                    console.log("Hikaye silindi: " + storyId);
-                }
-            }
-        };
+        <!-- ==========================================================================
+           SCREEN 4: MAIN APPLICATION DASHBOARD
+           ========================================================================== -->
+        <div id="app-screen" class="screen hidden">
+            <div class="app-header">
+                <h2>BEROSTYLE</h2>
+                <div class="header-status-badge">
+                    <div class="header-status-dot"></div>
+                    <span>CANLI AĞ</span>
+                </div>
+            </div>
 
-        // Kullanıcı listesini rozetli şekilde render etme
-        function renderUserList() {
-            const list = document.getElementById('dm-list');
-            Object.keys(App.users).forEach(un => {
-                const u = App.users[un];
-                const badge = App.renderBadge(u.username, u.isAdmin, u.status);
-                list.innerHTML += `
-                    <div class="user-item">
-                        <span>${u.username} ${badge}</span>
-                        <span class="badge" id="badge-${u.username}">0</span>
-                    </div>`;
-            });
-        }
-    </script>
-    <!-- 3. PARÇA: ADMIN YÖNETİM PANELİ VE SİSTEM İZOLASYONU -->
-    <div id="admin-panel" class="admin-panel">
-        <h2 style="color:var(--neon-cyan);">⚡ KURUCU YÖNETİM PANELİ</h2>
-        <div id="manage-users-list"></div>
+            <div class="main-content">
+                <!-- TAB 1: STORIES -->
+                <div id="tab-story" class="tab-content active">
+                    <div class="story-section">
+                        <div class="story-wall-scroll" id="story-wall-dom"></div>
+                        <button class="add-story-banner-btn" onclick="AppController.triggerFileSelect('story')">
+                            <span style="font-size: 1.45rem;">➕</span>
+                            <span>Kendi 24 Saatlik Hikayeni Paylaş</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DM & MEMBER DISCOVERY -->
+                <div id="tab-dm" class="tab-content">
+                    <div class="search-container">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-box" class="search-input" placeholder="Ağ içindeki arkadaşları ara..." oninput="AppController.filterUsers()">
+                    </div>
+                    
+                    <div class="section-sub-title">ÖNERİLEN CANLI ÜYELER</div>
+                    <div class="user-list" id="active-users-dom"></div>
+                </div>
+
+                <!-- TAB 3: PROFILE & FOUNDER BAN/DELETE PANEL -->
+                <div id="tab-profile" class="tab-content">
+                    <div class="profile-header-card">
+                        <div class="profile-avatar-wrapper pp-display-style" id="profile-avatar-box">
+                            <img src="" id="profile-avatar-img" style="display:none; width:100%; height:100%; object-fit:cover;">
+                        </div>
+                        <div class="profile-info-box">
+                            <h3 id="profile-username-display">kullanici</h3>
+                            <div class="profile-status-label" id="profile-status-display">Durum: Bekliyor</div>
+                        </div>
+                    </div>
+
+                    <!-- GOD-MODE FOUNDER PANEL WITH STRICT ISOLATION -->
+                    <div id="admin-section" class="admin-section hidden">
+                        <div class="admin-header-title">
+                            <span>⚡ KURUCU YÖNETİM PANELİ (BERAT ÖZER)</span>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">CANLI</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Ağdaki tüm üyelerin onaylama, reddetme ve <b style="color:var(--neon-red);">kaydını tamamen silme (ban)</b> işlemleri buradan yapılır:</p>
+                        
+                        <div class="section-sub-title" style="margin-top:10px;">⏳ ONAY BEKLEYENLER</div>
+                        <div class="user-list" id="pending-users-dom" style="margin-bottom:20px;"></div>
+
+                        <div class="section-sub-title" style="color:var(--neon-red);">🛡️ ONAYLANMIŞ TÜM AKTİF ÜYELER (SİL / BANLA)</div>
+                        <div class="user-list" id="approved-users-dom" style="margin-bottom:20px;"></div>
+
+                        <div class="section-sub-title" style="color:var(--neon-cyan);">📋 AĞ OLAY GÜNLÜĞÜ (SYSTEM LOGS)</div>
+                        <div class="system-log-box" id="system-logs-dom">
+                            <!-- Logs injected dynamically -->
+                        </div>
+                    </div>
+
+                    <button class="logout-btn" onclick="AppController.logout()">Oturumu Güvenli Kapat</button>
+                </div>
+            </div>
+
+            <!-- BOTTOM NAVIGATION BAR -->
+            <div class="bottom-nav">
+                <div class="nav-item active" id="nav-story" onclick="AppController.switchTab('story')">
+                    <span class="nav-icon">⭕</span><span>Hikaye</span>
+                </div>
+                <div class="nav-item" id="nav-dm" onclick="AppController.switchTab('dm')">
+                    <span class="nav-icon">💬</span><span>DM Keşif</span>
+                </div>
+                <div class="nav-item" id="nav-profile" onclick="AppController.switchTab('profile')">
+                    <span class="nav-icon">👤</span><span>Hesabım</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+           OVERLAY 1: REAL-TIME CHAT WITH EMOJI BAR & MESSAGE DELETION
+           ========================================================================== -->
+        <div id="chat-room" class="chat-overlay">
+            <div class="chat-header">
+                <span class="chat-back-btn" onclick="AppController.closeChatRoom()">◀</span>
+                <div class="user-avatar pp-display-style" id="chat-target-avatar-box" style="width:42px; height:42px;">
+                    <img src="" id="chat-target-avatar-img" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                </div>
+                <div>
+                    <h4 id="chat-target-name-display" style="color:var(--neon-cyan); font-size:1.05rem;">Kullanıcı</h4>
+                    <span style="font-size:0.7rem; color:var(--neon-green); font-weight:700;">● Çevrimiçi</span>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages-dom"></div>
+            
+            <!-- WHATSAPP EMOJI BAR -->
+            <div class="emoji-bar" id="emoji-bar-dom">
+                <span class="emoji-item" onclick="AppController.insertEmoji('🔥')">🔥</span>
+                <span class="emoji-item" onclick="AppController.insertEmoji('❤️')">❤️</span>
+                <span class="emoji-item" onclick="AppController.insertEmoji('😂')">😂</span>
+                <span class="emoji-item" onclick="AppController.insertEmoji('🚀')">🚀</span>
+                <span class="emoji-item" onclick="AppController.insertEmoji('👍')">👍</span>
+                <span class="emoji-item" onclick="AppController.insertEmoji('😎')">😎</span>
+                <span class="emoji-item" onclick="AppController.insertEmoji('😊')">😊</span>
+            </div>
+
+            <div class="chat-input-area">
+                <button class="emoji-toggle-btn" onclick="AppController.toggleEmojiBar()">😊</button>
+                <input type="text" id="chat-input-field" class="chat-input" placeholder="Mesaj yaz (Silmek için mesaja çift tıkla)..." onkeypress="if(event.key==='Enter') AppController.sendMessage()">
+                <button class="chat-send-btn" onclick="AppController.sendMessage()">Gönder</button>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+           OVERLAY 2: STORY VIEWER WITH STORY DELETION BUTTON
+           ========================================================================== -->
+        <div id="story-modal" class="story-viewer">
+            <div class="story-viewer-progress"><div class="story-viewer-bar" id="story-progress-bar"></div></div>
+            <div class="story-viewer-header">
+                <div class="user-avatar pp-display-style" id="story-viewer-avatar-box" style="width:36px; height:36px;">
+                    <img src="" id="story-viewer-avatar-img" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                </div>
+                <span id="story-viewer-username-display" style="font-weight:800; font-size:0.95rem; color:#fff;">Kullanıcı</span>
+            </div>
+            <span class="story-viewer-close" onclick="AppController.closeStoryViewer()">&times;</span>
+            <img src="" id="story-viewer-main-img" class="story-viewer-img">
+            
+            <!-- STORY DELETE BUTTON -->
+            <button class="story-delete-btn" id="story-delete-btn-dom" onclick="AppController.deleteCurrentStory()">
+                <span>🗑️</span><span>HİKAYEYİ SİL</span>
+            </button>
+        </div>
+
     </div>
 
     <script>
-        // ADMIN İZOLASYONU (Sadece beratozer görebilir)
-        const currentUser = JSON.parse(localStorage.getItem('berostyle_active_session') || '{}');
-        
-        function loadAdminPanel() {
-            if (currentUser.username === 'beratozer') {
-                document.getElementById('admin-panel').style.display = 'block';
-                renderAdminUsers();
-            }
-        }
+        /**
+         * ============================================================================
+         * BEROSTYLE CORE ENGINE (v5.0 ULTIMATE TITAN EDITION)
+         * - Zero Admin Panel Leakage for Ordinary Users
+         * - Twitter/X Style Verification Badges (Gold for Founder, Blue for Approved)
+         * - WhatsApp Double-Click Deletion, Emoji Bar, Story Garbage Collector
+         * - Advanced System Activity Logging
+         * ============================================================================
+         */
 
-        // KULLANICIYI AĞDAN TAMAMEN SİLME VE BANLAMA
-        function banUser(username) {
-            if(username === 'beratozer') { alert("Kendi kendini silemezsin!"); return; }
-            if(confirm(username + " adlı kullanıcıyı ağdan tamamen silmek ve banlamak istiyor musun?")) {
-                // Firebase & LocalDB Silme
-                delete App.users[username];
-                localStorage.setItem('berostyle_users_db', JSON.stringify(App.users));
+        /* --- 1. SYSTEM LOGGING ENGINE --- */
+        const Logger = {
+            log: function(eventText) {
+                let logs = JSON.parse(localStorage.getItem('berostyle_sys_logs') || '[]');
+                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                logs.unshift(`[${timeStr}] ${eventText}`);
+                if(logs.length > 30) logs.pop(); // Keep last 30 logs
+                localStorage.setItem('berostyle_sys_logs', JSON.stringify(logs));
+                AppController.renderSystemLogs();
+            },
+            getLogs: function() {
+                return JSON.parse(localStorage.getItem('berostyle_sys_logs') || '[]');
+            }
+        };
+
+        /* --- 2. TOAST NOTIFICATION MANAGER --- */
+        const Toast = {
+            show: function(message, type = 'normal', duration = 3000) {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast-msg ${type}`;
                 
-                // UI Güncelle
-                renderAdminUsers();
-                alert("Kullanıcı ağdan silindi.");
+                let icon = '⚡';
+                if(type === 'error') icon = '❌';
+                if(type === 'success') icon = '✅';
+
+                toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-25px)';
+                    toast.style.transition = 'all 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
             }
-        }
+        };
 
-        function renderAdminUsers() {
-            const adminList = document.getElementById('manage-users-list');
-            adminList.innerHTML = '';
-            
-            Object.keys(App.users).forEach(un => {
-                if (un === 'beratozer') return;
-                adminList.innerHTML += `
-                    <div style="padding:10px; border-bottom:1px solid #333;">
-                        <span>${un}</span>
-                        <button onclick="banUser('${un}')" style="background:red; color:#fff;">BANLA / SİL</button>
-                    </div>`;
-            });
-        }
+        /* --- 3. ADVANCED HYBRID DATABASE ENGINE --- */
+        const DatabaseEngine = {
+            dbRef: null,
+            isFirebaseActive: false,
 
-        // Uygulamayı başlat
-        loadAdminPanel();
+            init: function() {
+                try {
+                    const firebaseConfig = { databaseURL: "https://DUMMY_URL.firebaseio.com/" };
+                    firebase.initializeApp(firebaseConfig);
+                    this.dbRef = firebase.database();
+                    this.isFirebaseActive = true;
+                } catch(e) {
+                    console.log("Firebase not detected, falling back to LocalDB engine.");
+                    this.isFirebaseActive = false;
+                }
+                this.seedInitialUsers();
+            },
+
+            seedInitialUsers: function() {
+                let users = this.getLocalUsers();
+                if (!users || Object.keys(users).length === 0) {
+                    users = {
+                        "beratozer": {
+                            username: "beratozer",
+                            password: "babanız",
+                            gender: "male",
+                            ppUrl: "",
+                            status: "onaylı",
+                            isAdmin: true
+                        },
+                        "ceylin_06": {
+                            username: "ceylin_06",
+                            password: "123",
+                            gender: "female",
+                            ppUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+                            status: "bekliyor",
+                            isAdmin: false
+                        },
+                        "mert_kral": {
+                            username: "mert_kral",
+                            password: "123",
+                            gender: "male",
+                            ppUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+                            status: "onaylı",
+                            isAdmin: false
+                        },
+                        "ali_yilmaz": {
+                            username: "ali_yilmaz",
+                            password: "123",
+                            gender: "male",
+                            ppUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+                            status: "onaylı",
+                            isAdmin: false
+                        },
+                        "zeynep_su": {
+                            username: "zeynep_su",
+                            password: "123",
+                            gender: "female",
+                            ppUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+                            status: "onaylı",
+                            isAdmin: false
+                        },
+                        "burak_pro": {
+                            username: "burak_pro",
+                            password: "123",
+                            gender: "male",
+                            ppUrl: "",
+                            status: "bekliyor",
+                            isAdmin: false
+                        }
+                    };
+                    localStorage.setItem('berostyle_users_db', JSON.stringify(users));
+                }
+
+                let stories = this.getLocalStories();
+                if (!stories || Object.keys(stories).length === 0) {
+                    stories = {
+                        "ali_yilmaz": {
+                            username: "ali_yilmaz",
+                            avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+                            image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500",
+                            timestamp: Date.now()
+                        },
+                        "zeynep_su": {
+                            username: "zeynep_su",
+                            avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+                            image: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=500",
+                            timestamp: Date.now()
+                        }
+                    };
+                    localStorage.setItem('berostyle_stories_db', JSON.stringify(stories));
+                }
+            },
+
+            getLocalUsers: function() { return JSON.parse(localStorage.getItem('berostyle_users_db') || '{}'); },
+            saveUser: function(u) {
+                let users = this.getLocalUsers(); users[u.username] = u;
+                localStorage.setItem('berostyle_users_db', JSON.stringify(users));
+                if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users/' + u.username).set(u);
+            },
+            getUser: function(un) { return this.getLocalUsers()[un] || null; },
+            approveUser: function(un) {
+                let users = this.getLocalUsers();
+                if (users[un]) {
+                    users[un].status = 'onaylı';
+                    localStorage.setItem('berostyle_users_db', JSON.stringify(users));
+                    if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users/' + un + '/status').set('onaylı');
+                    Logger.log(`Kullanıcı onaylandı: ${un}`);
+                    return true;
+                }
+                return false;
+            },
+            deleteUser: function(un) {
+                let users = this.getLocalUsers();
+                if (users[un]) {
+                    delete users[un];
+                    localStorage.setItem('berostyle_users_db', JSON.stringify(users));
+                    if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users/' + un).remove();
+                    this.deleteStory(un);
+                    Logger.log(`Kullanıcı ağdan silindi/banlandı: ${un}`);
+                    return true;
+                }
+                return false;
+            },
+            getLocalStories: function() { return JSON.parse(localStorage.getItem('berostyle_stories_db') || '{}'); },
+            saveStory: function(st) {
+                let stories = this.getLocalStories(); stories[st.username] = st;
+                localStorage.setItem('berostyle_stories_db', JSON.stringify(stories));
+                if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('stories/' + st.username).set(st);
+                Logger.log(`Yeni hikaye paylaşıldı: ${st.username}`);
+            },
+            deleteStory: function(un) {
+                let stories = this.getLocalStories();
+                if (stories[un]) {
+                    delete stories[un];
+                    localStorage.setItem('berostyle_stories_db', JSON.stringify(stories));
+                    if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('stories/' + un).remove();
+                    Logger.log(`Hikaye silindi: ${un}`);
+                    return true;
+                }
+                return false;
+            },
+            getMessages: function(roomId) { return JSON.parse(localStorage.getItem('chat_' + roomId) || '[]'); },
+            saveMessage: function(roomId, msgObj) {
+                let msgs = this.getMessages(roomId); msgs.push(msgObj);
+                localStorage.setItem('chat_' + roomId, JSON.stringify(msgs));
+                if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('messages/' + roomId).push(msgObj);
+            },
+            deleteMessage: function(roomId, msgId) {
+                let msgs = this.getMessages(roomId);
+                msgs = msgs.filter(m => m.id !== msgId);
+                localStorage.setItem('chat_' + roomId, JSON.stringify(msgs));
+                Logger.log(`Mesaj silindi (Oda: ${roomId})`);
+                return true;
+            }
+        };
+
+        /* --- 4. MASTER APPLICATION CONTROLLER --- */
+        const AppController = {
+            currentUser: null,
+            authMode: 'login',
+            activeChatTarget: null,
+            activeStoryViewing: null,
+            storyTimer: null,
+            tempPPData: '',
+
+            init: function() {
+                DatabaseEngine.init();
+                const session = localStorage.getItem('berostyle_active_session');
+                if (session) {
+                    const parsed = JSON.parse(session);
+                    const freshUser = DatabaseEngine.getUser(parsed.username);
+                    if (freshUser) {
+                        this.currentUser = freshUser;
+                        this.launchApp();
+                        return;
+                    }
+                }
+                this.switchAuthTab('login');
+            },
+
+            switchScreen: function(fromId, toId) {
+                document.getElementById(fromId).classList.add('hidden');
+                setTimeout(() => document.getElementById(toId).classList.remove('hidden'), 150);
+            },
+
+            selectGender: function(g) {
+                this.tempGender = g;
+                this.switchAuthTab('register');
+                this.switchScreen('screen-gender', 'screen-auth');
+            },
+
+            switchAuthTab: function(mode) {
+                this.authMode = mode;
+                const loginBtn = document.getElementById('tab-btn-login');
+                const regBtn = document.getElementById('tab-btn-register');
+                const greetMsg = document.getElementById('greet-msg');
+                const submitBtn = document.getElementById('auth-submit-btn');
+
+                if (mode === 'login') {
+                    loginBtn.classList.add('active'); regBtn.classList.remove('active');
+                    greetMsg.innerText = "Tekrardan hoş geldin! Sisteme girmek için bilgilerini yaz.";
+                    submitBtn.innerText = "Sisteme Giriş Yap";
+                } else {
+                    regBtn.classList.add('active'); loginBtn.classList.remove('active');
+                    let gTxt = (this.tempGender === 'male') ? "Selam yakışıklı!" : (this.tempGender === 'female' ? "Selam güzellik!" : "Selam dostum!");
+                    greetMsg.innerText = `${gTxt} Aramıza katılmak için bir kullanıcı adı ve şifre belirle.`;
+                    submitBtn.innerText = "Hesap Oluştur ve Devam Et";
+                }
+            },
+
+            processAuth: function() {
+                const uIn = document.getElementById('auth-username').value.trim().toLowerCase();
+                const pIn = document.getElementById('auth-password').value.trim();
+                if (!uIn || !pIn) return Toast.show("Lütfen alanları boş bırakma kanka!", "error");
+                if (this.authMode === 'login') this.executeLogin(uIn, pIn); else this.executeRegister(uIn, pIn);
+            },
+
+            executeLogin: function(un, pw) {
+                if (un === 'beratozer' && pw === 'babanız') {
+                    let admin = DatabaseEngine.getUser('beratozer');
+                    if (!admin) admin = { username: "beratozer", password: "babanız", gender: "male", ppUrl: "", status: "onaylı", isAdmin: true };
+                    else { admin.status = 'onaylı'; admin.isAdmin = true; }
+                    this.currentUser = admin;
+                    localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
+                    Logger.log("Kurucu oturum açtı (beratozer)");
+                    Toast.show("Kurucu (Admin) olarak giriş yapıldı! ⚡", "success");
+                    this.switchScreen('screen-auth', 'app-screen');
+                    this.launchApp();
+                    return;
+                }
+                const uObj = DatabaseEngine.getUser(un);
+                if (uObj && uObj.password === pw) {
+                    this.currentUser = uObj;
+                    localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
+                    Logger.log(`Üye oturum açtı: ${un}`);
+                    Toast.show("Tekrardan hoş geldin kanka! 🚀", "success");
+                    this.switchScreen('screen-auth', 'app-screen');
+                    this.launchApp();
+                } else Toast.show("Kullanıcı adı veya şifre hatalı!", "error");
+            },
+
+            executeRegister: function(un, pw) {
+                if (DatabaseEngine.getUser(un)) return Toast.show("Bu kullanıcı adı zaten alınmış!", "error");
+                this.tempRegUser = {
+                    username: un, password: pw, gender: this.tempGender || 'male', ppUrl: '',
+                    status: (un === 'beratozer') ? 'onaylı' : 'bekliyor', isAdmin: (un === 'beratozer')
+                };
+                Toast.show("Harika! Şimdi profil resmini ayarlayalım.", "success");
+                this.switchScreen('screen-auth', 'screen-pp');
+            },
+
+            triggerFileSelect: function(target) {
+                if (target === 'pp') document.getElementById('file-input').click();
+                else if (target === 'story') {
+                    if (this.currentUser.status !== 'onaylı' && !this.currentUser.isAdmin) return Toast.show("Onaylanmadan hikaye atamazsın kanka!", "error");
+                    document.getElementById('story-file-input').click();
+                }
+            },
+
+            handlePhotoSelected: function(event) {
+                const f = event.target.files[0];
+                if (f) {
+                    const r = new FileReader();
+                    r.onload = (e) => {
+                        this.tempPPData = e.target.result;
+                        const img = document.getElementById('pp-preview-img');
+                        img.src = this.tempPPData; img.style.display = 'block';
+                        document.getElementById('pp-upload-box').classList.remove('pp-display-style');
+                        Toast.show("Fotoğraf yüklendi!", "success");
+                    };
+                    r.readAsDataURL(f);
+                }
+            },
+
+            finishRegistration: function() {
+                if (this.tempPPData) this.tempRegUser.ppUrl = this.tempPPData;
+                DatabaseEngine.saveUser(this.tempRegUser);
+                this.currentUser = this.tempRegUser;
+                localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
+                Logger.log(`Yeni hesap oluşturuldu: ${this.currentUser.username}`);
+                Toast.show("Kayıt tamamlandı! Aramıza hoş geldin. ⚡", "success");
+                this.switchScreen('screen-pp', 'app-screen');
+                this.launchApp();
+            },
+
+            // TWITTER / X STYLE VERIFICATION BADGE GENERATOR
+            getBadgeHtml: function(userObj) {
+                if (userObj.username === 'beratozer' || userObj.isAdmin) {
+                    return `<span class="verified-badge badge-gold" title="Kurucu Hesap">👑</span>`;
+                } else if (userObj.status === 'onaylı') {
+                    return `<span class="verified-badge badge-blue" title="Onaylı Üye">✔</span>`;
+                } else {
+                    return `<span style="font-size:0.8rem; color:var(--text-muted);" title="Onay Bekliyor">⏳</span>`;
+                }
+            },
+
+            launchApp: function() {
+                const myBadge = this.getBadgeHtml(this.currentUser);
+                document.getElementById('profile-username-display').innerHTML = `${this.currentUser.username} ${myBadge}`;
+                
+                const pImg = document.getElementById('profile-avatar-img');
+                const pBox = document.getElementById('profile-avatar-box');
+                if (this.currentUser.ppUrl) {
+                    pImg.src = this.currentUser.ppUrl; pImg.style.display = 'block'; pBox.classList.remove('pp-display-style');
+                } else {
+                    pImg.style.display = 'none'; pBox.classList.add('pp-display-style');
+                }
+
+                // STRICT ISOLATION FOR ORDINARY ACCOUNTS (REMOVES PANEL COMPLETELEY)
+                const statusEl = document.getElementById('profile-status-display');
+                const adminSec = document.getElementById('admin-section');
+
+                if (this.currentUser.username === 'beratozer' || this.currentUser.isAdmin) {
+                    statusEl.innerText = "Durum: KURUCU (ADMİN)"; statusEl.className = "profile-status-label approved";
+                    adminSec.classList.remove('hidden');
+                    this.renderSystemLogs();
+                } else {
+                    adminSec.classList.add('hidden'); // Fully hide admin panel
+                    statusEl.innerText = (this.currentUser.status === 'onaylı') ? "Durum: ONAYLI ÜYE" : "Durum: ONAY BEKLİYOR";
+                    statusEl.className = (this.currentUser.status === 'onaylı') ? "profile-status-label approved" : "profile-status-label pending";
+                }
+                this.refreshUI();
+            },
+
+            refreshUI: function() { this.renderUserLists(); this.renderStories(); },
+
+            renderSystemLogs: function() {
+                if (!this.currentUser || !this.currentUser.isAdmin) return;
+                const dom = document.getElementById('system-logs-dom');
+                if (!dom) return;
+                const logs = Logger.getLogs();
+                dom.innerHTML = '';
+                if(logs.length === 0) {
+                    dom.innerHTML = `<span style="color:#555;">Henüz kaydedilen aktivite yok...</span>`;
+                    return;
+                }
+                logs.forEach(l => {
+                    const el = document.createElement('div');
+                    el.className = 'log-entry';
+                    el.innerText = l;
+                    dom.appendChild(el);
+                });
+            },
+
+            renderUserLists: function() {
+                const users = DatabaseEngine.getLocalUsers();
+                const activeDom = document.getElementById('active-users-dom');
+                const pendingDom = document.getElementById('pending-users-dom');
+                const approvedAdminDom = document.getElementById('approved-users-dom');
+
+                activeDom.innerHTML = ''; pendingDom.innerHTML = ''; approvedAdminDom.innerHTML = '';
+                let approvedCount = 0; let pendingCount = 0;
+
+                for (let un in users) {
+                    const u = users[un];
+                    let avHtml = u.ppUrl ? `<img src="${u.ppUrl}" class="user-avatar">` : `<div class="user-avatar pp-display-style"></div>`;
+                    let avMini = u.ppUrl ? `<img src="${u.ppUrl}" class="user-avatar" style="width:42px;height:42px;">` : `<div class="user-avatar pp-display-style" style="width:42px;height:42px;"></div>`;
+                    let badge = this.getBadgeHtml(u);
+
+                    if (u.status === 'onaylı' || u.isAdmin) {
+                        if (u.username !== this.currentUser.username) {
+                            approvedCount++;
+                            const item = document.createElement('div'); item.className = 'user-item';
+                            item.innerHTML = `
+                                <div class="user-meta">${avHtml}<div class="user-name-box"><h4>${u.username} ${badge}</h4></div></div>
+                                <button class="dm-action-btn" onclick="AppController.openChatRoom('${u.username}', '${u.ppUrl}')">Mesaj At</button>
+                            `;
+                            activeDom.appendChild(item);
+
+                            // ADMIN DELETE/BAN PANEL FOR APPROVED MEMBERS
+                            if(this.currentUser.isAdmin) {
+                                const adminItem = document.createElement('div'); adminItem.className = 'user-item';
+                                adminItem.innerHTML = `
+                                    <div class="user-meta">${avMini}<div class="user-name-box"><h4>${u.username} ${badge}</h4><p style="color:var(--neon-green); font-size:0.75rem;">Aktif Ağ Üyesi</p></div></div>
+                                    <button class="ban-btn" onclick="AppController.deleteUserAction('${u.username}')">HESABI SİL / BANLA</button>
+                                `;
+                                approvedAdminDom.appendChild(adminItem);
+                            }
+                        }
+                    } else if (u.status === 'bekliyor') {
+                        pendingCount++;
+                        const item = document.createElement('div'); item.className = 'user-item';
+                        item.innerHTML = `
+                            <div class="user-meta">${avMini}<div class="user-name-box"><h4>${u.username} ${badge}</h4><p style="color:var(--neon-yellow); font-size:0.75rem;">Onay bekliyor...</p></div></div>
+                            <div class="admin-action-btn-group">
+                                <button class="approve-btn" onclick="AppController.approveUserAction('${u.username}')">ONAYLA</button>
+                                <button class="reject-btn" onclick="AppController.deleteUserAction('${u.username}')">REDDET</button>
+                            </div>
+                        `;
+                        pendingDom.appendChild(item);
+                    }
+                }
+                if (approvedCount === 0) activeDom.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:20px;">Ağda başka onaylı üye yok.</p>`;
+                if (pendingCount === 0) pendingDom.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:10px;">Bekleyen istek yok şef.</p>`;
+            },
+
+            approveUserAction: function(un) {
+                if (DatabaseEngine.approveUser(un)) { Toast.show(`${un} onaylandı! ⚡`, "success"); this.refreshUI(); }
+            },
+
+            deleteUserAction: function(un) {
+                if (confirm(`${un} kullanıcısını ağdan tamamen silmek ve banlamak istediğine emin misin kanka?`)) {
+                    if (DatabaseEngine.deleteUser(un)) {
+                        Toast.show(`${un} sistemden kalıcı olarak silindi! 🗑️`, "error");
+                        this.refreshUI();
+                    }
+                }
+            },
+
+            filterUsers: function() {
+                const q = document.getElementById('search-box').value.toLowerCase().trim();
+                document.querySelectorAll('#active-users-dom .user-item').forEach(it => {
+                    it.style.display = it.querySelector('h4').innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+                });
+            },
+
+            // --- STORY MODULE WITH DELETION ---
+            handleStoryUpload: function(event) {
+                const f = event.target.files[0];
+                if (f) {
+                    const r = new FileReader();
+                    r.onload = (e) => {
+                        const stObj = { username: this.currentUser.username, avatar: this.currentUser.ppUrl, image: e.target.result, timestamp: Date.now() };
+                        DatabaseEngine.saveStory(stObj); Toast.show("Hikayen paylaşıldı! ⭕", "success"); this.renderStories();
+                    };
+                    r.readAsDataURL(f);
+                }
+            },
+
+            renderStories: function() {
+                const stories = DatabaseEngine.getLocalStories();
+                const wall = document.getElementById('story-wall-dom'); wall.innerHTML = '';
+
+                const selfSlot = document.createElement('div'); selfSlot.className = 'story-slot';
+                let sRing = stories[this.currentUser.username] ? 'story-ring' : 'story-ring no-story';
+                let sAv = this.currentUser.ppUrl ? `<img src="${this.currentUser.ppUrl}" class="story-img">` : `<div class="story-img pp-display-style"></div>`;
+                let badge = !stories[this.currentUser.username] ? `<div class="story-add-badge">+</div>` : '';
+
+                selfSlot.innerHTML = `<div class="${sRing}">${sAv}${badge}</div><span class="story-name">Hikayen</span>`;
+                if (stories[this.currentUser.username]) selfSlot.onclick = () => this.openStoryViewer(stories[this.currentUser.username]);
+                else selfSlot.onclick = () => this.triggerFileSelect('story');
+                wall.appendChild(selfSlot);
+
+                for (let un in stories) {
+                    if (un === this.currentUser.username) continue;
+                    if (Date.now() - stories[un].timestamp > 86400000) { DatabaseEngine.deleteStory(un); continue; }
+                    const st = stories[un]; const slot = document.createElement('div'); slot.className = 'story-slot';
+                    let av = st.avatar ? `<img src="${st.avatar}" class="story-img">` : `<div class="story-img pp-display-style"></div>`;
+                    slot.innerHTML = `<div class="story-ring">${av}</div><span class="story-name">${st.username}</span>`;
+                    slot.onclick = () => this.openStoryViewer(st); wall.appendChild(slot);
+                }
+            },
+
+            openStoryViewer: function(stObj) {
+                this.activeStoryViewing = stObj;
+                const modal = document.getElementById('story-modal');
+                document.getElementById('story-viewer-username-display').innerText = stObj.username;
+                document.getElementById('story-viewer-main-img').src = stObj.image;
+                
+                const avBox = document.getElementById('story-viewer-avatar-box');
+                const avImg = document.getElementById('story-viewer-avatar-img');
+                if (stObj.avatar) { avImg.src = stObj.avatar; avImg.style.display = 'block'; avBox.classList.remove('pp-display-style'); }
+                else { avImg.style.display = 'none'; avBox.classList.add('pp-display-style'); }
+
+                const delBtn = document.getElementById('story-delete-btn-dom');
+                if (stObj.username === this.currentUser.username || this.currentUser.isAdmin) delBtn.classList.add('active');
+                else delBtn.classList.remove('active');
+
+                modal.style.display = 'flex';
+                let w = 0; clearInterval(this.storyTimer);
+                const bar = document.getElementById('story-progress-bar'); bar.style.width = '0%';
+                this.storyTimer = setInterval(() => { if (w >= 100) this.closeStoryViewer(); else { w += 2; bar.style.width = w + '%'; } }, 60);
+            },
+
+            closeStoryViewer: function() {
+                clearInterval(this.storyTimer); document.getElementById('story-modal').style.display = 'none';
+                this.activeStoryViewing = null;
+            },
+
+            deleteCurrentStory: function() {
+                if (!this.activeStoryViewing) return;
+                const targetUn = this.activeStoryViewing.username;
+                if (DatabaseEngine.deleteStory(targetUn)) {
+                    Toast.show("Hikaye çöpe atıldı! 🗑️", "error");
+                    this.closeStoryViewer();
+                    this.renderStories();
+                }
+            },
+
+            // --- REAL-TIME CHAT WITH EMOJIS & DOUBLE-CLICK MESSAGE DELETION ---
+            openChatRoom: function(tUser, tPp) {
+                if (this.currentUser.status !== 'onaylı' && !this.currentUser.isAdmin) return Toast.show("Onaylanmayan hesaplar mesaj atamaz!", "error");
+                this.activeChatTarget = tUser;
+                document.getElementById('chat-target-name-display').innerText = tUser;
+                const avBox = document.getElementById('chat-target-avatar-box');
+                const avImg = document.getElementById('chat-target-avatar-img');
+                if (tPp) { avImg.src = tPp; avImg.style.display = 'block'; avBox.classList.remove('pp-display-style'); }
+                else { avImg.style.display = 'none'; avBox.classList.add('pp-display-style'); }
+                document.getElementById('chat-room').classList.add('active');
+                this.renderMessages();
+            },
+
+            closeChatRoom: function() {
+                document.getElementById('chat-room').classList.remove('active');
+                document.getElementById('emoji-bar-dom').classList.remove('active');
+                this.activeChatTarget = null;
+            },
+
+            toggleEmojiBar: function() { document.getElementById('emoji-bar-dom').classList.toggle('active'); },
+            insertEmoji: function(emoji) {
+                const f = document.getElementById('chat-input-field');
+                f.value += emoji; f.focus();
+            },
+
+            getRoomId: function(u1, u2) { return u1 < u2 ? `${u1}_${u2}` : `${u2}_${u1}`; },
+
+            sendMessage: function() {
+                const f = document.getElementById('chat-input-field');
+                const txt = f.value.trim(); if (!txt || !this.activeChatTarget) return;
+                const roomId = this.getRoomId(this.currentUser.username, this.activeChatTarget);
+                const msgObj = {
+                    id: 'msg_' + Date.now() + Math.random().toString(36).substr(2, 4),
+                    sender: this.currentUser.username,
+                    text: txt,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+                DatabaseEngine.saveMessage(roomId, msgObj);
+                f.value = ''; document.getElementById('emoji-bar-dom').classList.remove('active');
+                this.renderMessages();
+            },
+
+            renderMessages: function() {
+                if (!this.activeChatTarget) return;
+                const roomId = this.getRoomId(this.currentUser.username, this.activeChatTarget);
+                const msgs = DatabaseEngine.getMessages(roomId);
+                const dom = document.getElementById('chat-messages-dom'); dom.innerHTML = '';
+                if (msgs.length === 0) { dom.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:30px;">Burada henüz mesaj yok. İlk adımı sen at kanka! 💬</p>`; return; }
+
+                msgs.forEach(m => {
+                    const b = document.createElement('div');
+                    const isMe = m.sender === this.currentUser.username;
+                    b.className = `msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
+                    
+                    let delHint = isMe ? `<span class="msg-delete-hint">Çift tıkla sil</span>` : '';
+                    b.innerHTML = `${delHint}${m.text} <span class="msg-time">${m.time || ''}</span>`;
+                    
+                    if(isMe || this.currentUser.isAdmin) {
+                        b.ondblclick = () => this.deleteMessageAction(roomId, m.id);
+                    }
+                    dom.appendChild(b);
+                });
+                dom.scrollTop = dom.scrollHeight;
+            },
+
+            deleteMessageAction: function(roomId, msgId) {
+                if(confirm("Bu mesajı silmek istediğine emin misin kanka?")) {
+                    DatabaseEngine.deleteMessage(roomId, msgId);
+                    Toast.show("Mesaj silindi! 🗑️", "normal");
+                    this.renderMessages();
+                }
+            },
+
+            switchTab: function(tName) {
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.getElementById('tab-' + tName).classList.add('active');
+                document.getElementById('nav-' + tName).classList.add('active');
+                if (tName === 'dm' || tName === 'profile') this.refreshUI();
+            },
+
+            logout: function() {
+                localStorage.removeItem('berostyle_active_session'); this.currentUser = null;
+                Toast.show("Oturum kapatıldı. Görüşürüz kanka! 👋", "normal");
+                setTimeout(() => location.reload(), 800);
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => AppController.init());
     </script>
 </body>
 </html>
