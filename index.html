@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BEROSTYLE</title>
-    <!-- Firebase SDK'ları -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
@@ -16,246 +16,124 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            background: #000;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            height: -webkit-fill-available;
-            overflow: hidden;
+            background: #000; color: white;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; height: -webkit-fill-available; overflow: hidden;
         }
-
-        /* MOBİL ODAKLI DOĞAL ESNEK KASA */
         .phone-wrapper {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            max-width: 450px;
-            background: #050505;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid #111;
-            border-right: 1px solid #111;
+            position: relative; width: 100vw; height: 100vh; max-width: 450px;
+            background: #050505; overflow: hidden; display: flex; flex-direction: column;
+            border-left: 1px solid #111; border-right: 1px solid #111;
         }
-
-        /* EKRAN GEÇİŞLERİ VE TURKUAZ NEON ESİNTİSİ */
         .screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #050505;
-            z-index: 10;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            opacity: 1;
-            transform: scale(1);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #050505; z-index: 10; transition: opacity 0.3s ease; opacity: 1;
         }
-        .screen.hidden {
-            opacity: 0;
-            transform: scale(0.96);
-            pointer-events: none;
-            z-index: 1;
-        }
-
+        .screen.hidden { opacity: 0; pointer-events: none; z-index: 1; }
         h1.app-title {
-            font-size: 3.2rem;
-            font-weight: 900;
-            letter-spacing: 3px;
-            background: linear-gradient(45deg, #00f2fe, #4facfe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
-            text-shadow: 0 0 25px rgba(0, 242, 254, 0.4);
-        }
-
-        h2.welcome-msg {
-            font-size: 1.3rem;
-            text-align: center;
-            margin-bottom: 35px;
-            line-height: 1.6;
-            color: #e0e0e0;
-        }
-
-        /* HAVALI CİNSİYET SEÇİM BUTONLARI */
-        .gender-container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-        }
-        .gender-btn {
-            width: 90%;
-            padding: 18px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            border: 2px solid transparent;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .btn-male {
-            background: rgba(0, 242, 254, 0.1);
-            color: #00f2fe;
-            border-color: #00f2fe;
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
-        }
-        .btn-female {
-            background: rgba(248, 87, 166, 0.1);
-            color: #f857a6;
-            border-color: #f857a6;
-            box-shadow: 0 0 15px rgba(248, 87, 166, 0.2);
-        }
-        .gender-btn:active { transform: scale(0.95); }
-
-        /* BERAT ÖZER UYARI BANNERI */
-        .top-warning {
-            position: absolute;
-            top: 25px; left: 5%; width: 90%;
-            background: rgba(0, 242, 254, 0.08);
-            border: 1px solid #00f2fe;
-            color: #00f2fe;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            text-align: center;
-            line-height: 1.5;
-        }
-
-        .input-group {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .custom-input {
-            width: 100%;
-            padding: 16px;
-            background: #111;
-            border: 2px solid #222;
-            border-radius: 14px;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        .custom-input:focus { border-color: #00f2fe; }
-        
-        .action-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
-            color: black;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 14px;
-            cursor: pointer;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
-        }
-
-        .pp-upload-circle {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 2px dashed #00f2fe;
-            background: #111;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            margin-bottom: 30px;
-            overflow: hidden;
-            text-align: center;
-        }
-        .pp-upload-circle img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .pp-upload-circle span { font-size: 0.85rem; color: #888; padding: 10px; }
-
-        /* ANA UYGULAMA PANEL DÜZENİ */
-        #app-screen { padding: 0; display: flex; flex-direction: column; justify-content: space-between; }
-        .app-header {
-            width: 100%; padding: 15px 20px; border-bottom: 1px solid #151515;
-            display: flex; justify-content: space-between; align-items: center; background: #050505;
-        }
-        .app-header h2 {
-            font-size: 1.6rem; font-weight: 900;
+            font-size: 3.2rem; font-weight: 900; letter-spacing: 3px;
             background: linear-gradient(45deg, #00f2fe, #4facfe);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 30px; text-shadow: 0 0 25px rgba(0, 242, 254, 0.4);
         }
-
-        .main-content { flex: 1; width: 100%; overflow-y: auto; position: relative; }
+        .welcome-msg { font-size: 1.3rem; text-align: center; margin-bottom: 35px; line-height: 1.6; color: #e0e0e0; }
+        .gender-container { width: 100%; display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        .gender-btn {
+            width: 90%; padding: 18px; font-size: 1.2rem; font-weight: 800; border: 2px solid transparent;
+            border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-male { background: rgba(0, 242, 254, 0.1); color: #00f2fe; border-color: #00f2fe; }
+        .btn-female { background: rgba(248, 87, 166, 0.1); color: #f857a6; border-color: #f857a6; }
+        
+        .top-warning {
+            position: absolute; top: 25px; left: 5%; width: 90%; background: rgba(0, 242, 254, 0.08);
+            border: 1px solid #00f2fe; color: #00f2fe; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; text-align: center;
+        }
+        .input-group { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+        .custom-input {
+            width: 100%; padding: 16px; background: #111; border: 2px solid #222; border-radius: 14px;
+            color: white; font-size: 1rem; outline: none;
+        }
+        .custom-input:focus { border-color: #00f2fe; }
+        .action-btn {
+            width: 100%; padding: 16px; background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: black; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 14px; cursor: pointer; margin-top: 20px;
+        }
+        
+        /* FIX BEYAZ PP ALANI */
+        .pp-display-style {
+            background-color: #fff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z'/%3E%3C/svg%3E");
+            background-size: 70% 70%; background-position: center; background-repeat: no-repeat;
+        }
+        .pp-upload-circle {
+            width: 140px; height: 140px; border-radius: 50%; border: 2px dashed #00f2fe;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 30px; overflow: hidden;
+        }
+        .pp-upload-circle img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* APP UI */
+        #app-screen { padding: 0; display: flex; flex-direction: column; justify-content: space-between; }
+        .app-header { width: 100%; padding: 15px 20px; border-bottom: 1px solid #151515; display: flex; justify-content: space-between; align-items: center; background: #050505; }
+        .app-header h2 { font-size: 1.6rem; font-weight: 900; background: linear-gradient(45deg, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .main-content { flex: 1; width: 100%; overflow-y: auto; }
         .tab-content { width: 100%; height: 100%; display: none; padding: 15px; }
         .tab-content.active { display: block; }
-
-        /* HİKAYE ALANI */
-        .story-container { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
-        .story-slot { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 70px; }
-        .story-ring {
-            width: 68px; height: 68px; border-radius: 50%;
-            background: linear-gradient(45deg, #00f2fe, #4facfe); padding: 2px;
+        
+        /* SEARCH BAR */
+        .search-container { width: 100%; margin-bottom: 15px; }
+        .search-input {
+            width: 100%; padding: 12px 15px; background: #111; border: 1px solid #222;
+            border-radius: 10px; color: white; font-size: 0.95rem; outline: none;
         }
-        .story-img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #050505; background: #222; object-fit: cover; }
-        .story-name { font-size: 0.8rem; color: #aaa; }
+        .search-input:focus { border-color: #00f2fe; }
 
-        /* CANLI KULLANICI LİSTESİ (DM BAŞLANGICI) */
-        .user-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        /* LISTS */
+        .user-list { display: flex; flex-direction: column; gap: 10px; }
         .user-item {
             display: flex; align-items: center; justify-content: space-between; padding: 12px;
-            background: #111; border-radius: 14px; cursor: pointer; transition: background 0.2s;
+            background: #111; border-radius: 14px;
         }
-        .user-item:active { background: #1c1c1c; }
         .user-meta { display: flex; align-items: center; gap: 12px; }
-        .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #222; }
-        .online-dot { width: 10px; height: 10px; background: #00f2fe; border-radius: 50%; box-shadow: 0 0 8px #00f2fe; }
+        .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        
+        /* ADMIN PANEL DÜZENİ */
+        .admin-panel {
+            margin-top: 20px; padding: 15px; background: rgba(0, 242, 254, 0.05);
+            border: 1px dashed #00f2fe; border-radius: 12px; width: 100%;
+        }
+        .admin-title { font-size: 1rem; color: #00f2fe; font-weight: bold; margin-bottom: 10px; }
+        .approve-btn {
+            padding: 6px 14px; background: #00f2fe; color: black; border: none;
+            border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;
+        }
 
-        /* PROFİL ALANI */
         .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
         .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #00f2fe; object-fit: cover; }
-        .profile-stats { display: flex; gap: 20px; }
-        .stat-box { text-align: center; }
-        .stat-num { font-size: 1.1rem; font-weight: bold; }
-        .stat-title { font-size: 0.75rem; color: #777; }
-        .logout-btn {
-            margin-top: 30px; width: 100%; padding: 12px; background: #ff3333; color: white;
-            border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
-        }
-
-        /* ALT NAVİGASYON */
+        .logout-btn { margin-top: 20px; width: 100%; padding: 12px; background: #ff3333; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .bottom-nav { width: 100%; height: 60px; border-top: 1px solid #151515; display: flex; background: #050505; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #555; font-size: 0.75rem; font-weight: bold; gap: 2px; }
         .nav-item.active { color: #00f2fe; }
-        .nav-icon { font-size: 1.3rem; }
     </style>
 </head>
 <body>
 
     <div class="phone-wrapper">
-
-        <!-- 1. EKRAN: CİNSİYET SEÇİMİ -->
+        <!-- 1. CİNSİYET SEÇİMİ -->
         <div id="screen-gender" class="screen">
             <h1 class="app-title">BEROSTYLE</h1>
-            <h2 class="welcome-msg">Aramıza hoş geldin!<br>Devam etmek için lütfen cinsiyetini seç.</h2>
             <div class="gender-container">
                 <button class="gender-btn btn-male" onclick="handleGender('male')">Erkek</button>
                 <button class="gender-btn btn-female" onclick="handleGender('female')">Kız</button>
             </div>
         </div>
 
-        <!-- 2. EKRAN: KULLANICI ADI & ŞİFRE -->
+        <!-- 2. KULLANICI ADI VE ŞİFRE -->
         <div id="screen-register" class="screen hidden">
             <div class="top-warning">
                 Berat Özer kuralları gereği telefon numarası ve e-posta doğrulama zorunluluğu tamamen rafa kaldırılmıştır. Direkt başlayabilirsin!
             </div>
-            <h2 class="welcome-msg" id="greet-msg" style="margin-top: 80px;"></h2>
+            <h2 class="welcome-msg" id="greet-msg" style="margin-top: 70px;"></h2>
             <div class="input-group">
                 <input type="text" id="username" class="custom-input" placeholder="Kullanıcı adı belirle..." autocomplete="off">
                 <input type="password" id="password" class="custom-input" placeholder="Şifre belirle...">
@@ -263,95 +141,79 @@
             <button class="action-btn" onclick="handleRegister()">Devam Et</button>
         </div>
 
-        <!-- 3. EKRAN: PROFİL FOTOĞRAFI SEÇİMİ -->
+        <!-- 3. PROFİL RESMİ SEÇİMİ -->
         <div id="screen-pp" class="screen hidden">
-            <h2 class="welcome-msg">Son adım! Profil fotoğrafını galeriden seçip yükle.</h2>
-            <div class="pp-upload-circle" onclick="triggerFileSelect()">
-                <span id="upload-placeholder">Fotoğraf Seçmek İçin Dokun</span>
-                <img id="pp-preview" alt="Profil">
+            <h2 class="welcome-msg">Profil fotoğrafını seçip yükle.</h2>
+            <div class="pp-upload-circle pp-display-style" id="pp-box" onclick="triggerFileSelect()">
+                <img id="pp-preview" style="display:none;" alt="Profil">
             </div>
             <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="loadPhoto(event)">
-            <button class="action-btn" onclick="handleLoginComplete()">Giriş Yap ve Katıl</button>
+            <button class="action-btn" onclick="handleLoginComplete()">Giriş Yap</button>
         </div>
 
-        <!-- 4. EKRAN: ANA UYGULAMA ALANI -->
+        <!-- 4. UYGULAMA PANELİ -->
         <div id="app-screen" class="screen hidden">
             <div class="app-header">
                 <h2>BEROSTYLE</h2>
-                <span style="color: #00f2fe; font-weight: bold;">ONLINE</span>
+                <span id="online-status-tag" style="color: #00f2fe; font-weight: bold; font-size: 0.85rem;">ONLINE</span>
             </div>
 
             <div class="main-content">
-                <!-- HİKAYE SEKMESİ (SOL ALT) -->
+                <!-- HİKAYE SEKMESİ -->
                 <div id="tab-story" class="tab-content active">
-                    <div class="story-container" id="story-wall">
-                        <div class="story-slot">
-                            <div class="story-ring"><img src="" class="story-img user-pp-sync"></div>
-                            <div class="story-name">Hikayen</div>
-                        </div>
+                    <div id="story-waiting-msg" style="text-align:center; color:#666; margin-top:40px; font-size:0.9rem;">
+                        Hesabınız aktifleştiğinde hikaye akışı burada görünecektir.
                     </div>
-                    <p style="color: #444; text-align: center; margin-top: 40px; font-size: 0.85rem;">Gerçek hikaye paylaşım modülü bir sonraki adımda açılacak...</p>
                 </div>
 
-                <!-- DM SEKMESİ (ORTA ALT) -->
+                <!-- DM SEKMESİ -->
                 <div id="tab-dm" class="tab-content">
-                    <h3 style="margin-bottom: 15px; font-size: 1.1rem; color: #00f2fe;">Aktif Üyelerle DM Başlat</h3>
-                    <div class="user-list" id="active-users-dom">
-                        <!-- Kayıt olan gerçek kişiler buraya listelenecek -->
+                    <div class="search-container">
+                        <input type="text" id="search-box" class="search-input" placeholder="Arkadaş ara..." oninput="filterUsers()">
                     </div>
+                    <h4 style="margin-bottom: 10px; font-size: 0.9rem; color: #00f2fe;">Önerilen Arkadaşlar</h4>
+                    <div class="user-list" id="active-users-dom"></div>
                 </div>
 
-                <!-- PROFİL SEKMESİ (SAĞ ALT) -->
+                <!-- PROFİL SEKMESİ -->
                 <div id="tab-profile" class="tab-content">
                     <div class="profile-header">
-                        <img src="" class="profile-avatar user-pp-sync">
-                        <div class="profile-stats">
-                            <div class="stat-box"><div class="stat-num" id="p-stat-followers">0</div><div class="stat-title">Takipçi</div></div>
-                            <div class="stat-box"><div class="stat-num" id="p-stat-following">0</div><div class="stat-title">Takip</div></div>
+                        <div class="profile-avatar pp-display-style" id="profile-avatar-box">
+                            <img src="" id="user-pp-element" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                        </div>
+                        <div>
+                            <h3 id="profile-user-name" style="color: #00f2fe;">kullanici_adi</h3>
+                            <p style="color: #666; font-size: 0.85rem; margin-top: 4px;" id="account-status-text">Durum: Bekliyor</p>
                         </div>
                     </div>
-                    <div class="profile-bio">
-                        <h3 id="profile-user-name" style="color: #00f2fe;">kullanici_adi</h3>
-                        <p style="color: #666; font-size: 0.85rem; margin-top: 4px;">BEROSTYLE Canlı Üyesi 🚀</p>
+                    
+                    <!-- GİZLİ ADMİN PANELİ -->
+                    <div id="admin-panel-area" class="admin-panel hidden">
+                        <div class="admin-title">Admin Onay Paneli (Berat Özer)</div>
+                        <div class="user-list" id="pending-users-dom"></div>
                     </div>
+
                     <button class="logout-btn" onclick="logout()">Oturumu Kapat</button>
                 </div>
             </div>
 
-            <!-- ALT NAVİGASYON BAR -->
             <div class="bottom-nav">
-                <div class="nav-item active" id="nav-story" onclick="switchTab('story')">
-                    <span class="nav-icon">⭕</span><span>Hikaye</span>
-                </div>
-                <div class="nav-item" id="nav-dm" onclick="switchTab('dm')">
-                    <span class="nav-icon">💬</span><span>DM</span>
-                </div>
-                <div class="nav-item" id="nav-profile" onclick="switchTab('profile')">
-                    <span class="nav-icon">👤</span><span>Profil</span>
-                </div>
+                <div class="nav-item active" id="nav-story" onclick="switchTab('story')"><span>⭕</span><span>Hikaye</span></div>
+                <div class="nav-item" id="nav-dm" onclick="switchTab('dm')"><span>💬</span><span>DM</span></div>
+                <div class="nav-item" id="nav-profile" onclick="switchTab('profile')"><span>👤</span><span>Profil</span></div>
             </div>
         </div>
-
     </div>
 
     <script>
-        // --- FIREBASE KURULUMU VE BAĞLANTISI ---
-        // Kanka buraya kendi Firebase Console'undan alacağın config bilgilerini yapıştırırsın, şimdilik altyapı hazır.
-        const firebaseConfig = {
-            databaseURL: "https://DUMMY_URL.firebaseio.com/" 
-        };
-        
+        // Firebase Config
+        const firebaseConfig = { databaseURL: "https://DUMMY_URL.firebaseio.com/" };
         let db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-        } catch(e) {
-            console.log("Firebase config henüz girilmedi, lokal simülasyon aktif.");
-        }
+        try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch(e) {}
 
-        let userData = { gender: '', username: '', ppUrl: 'https://via.placeholder.com/150/222/fff?text=PP' };
+        let userData = { gender: '', username: '', password: '', ppUrl: '', status: 'bekliyor' };
+        let allApprovedUsers = [];
 
-        // OTURUM KONTROLÜ (Beni Hatırla Mekanizması)
         window.onload = function() {
             const savedUser = localStorage.getItem('berostyle_session');
             if (savedUser) {
@@ -362,22 +224,17 @@
 
         function handleGender(type) {
             userData.gender = type;
-            document.getElementById('greet-msg').innerText = type === 'male' 
-                ? "Selam yakışıklı, var mısın bize katılmaya? :)" 
-                : "Selam güzellik, var mısın bize katılmaya? :)";
+            document.getElementById('greet-msg').innerText = type === 'male' ? "Selam yakışıklı, var mısın bize katılmaya? :)" : "Selam güzellik, var mısın bize katılmaya? :)";
             switchScreen('screen-gender', 'screen-register');
         }
 
         function handleRegister() {
             const userIn = document.getElementById('username').value.trim().toLowerCase();
             const passIn = document.getElementById('password').value.trim();
-
-            if(!userIn || !passIn) {
-                alert('Alanları boş bırakma kanka!');
-                return;
-            }
-
+            if(!userIn || !passIn) return alert('Alanları doldur kanka!');
+            
             userData.username = userIn;
+            userData.password = passIn;
             switchScreen('screen-register', 'screen-pp');
         }
 
@@ -388,9 +245,9 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('pp-preview').src = e.target.result;
-                    document.getElementById('pp-preview').style.display = 'block';
-                    document.getElementById('upload-placeholder').style.display = 'none';
+                    const img = document.getElementById('pp-preview');
+                    img.src = e.target.result; img.style.display = 'block';
+                    document.getElementById('pp-box').classList.remove('pp-display-style');
                     userData.ppUrl = e.target.result;
                 }
                 reader.readAsDataURL(file);
@@ -398,94 +255,154 @@
         }
 
         function handleLoginComplete() {
-            // Oturumu kalıcı hafızaya al
+            if(userData.username === 'beratozer' && userData.password === 'babanız') {
+                userData.status = 'onaylı';
+            }
             localStorage.setItem('berostyle_session', JSON.stringify(userData));
-            
-            // Verileri Firebase'e Canlı Gönder (Eğer bağlıysa)
             if(db) {
                 db.ref('users/' + userData.username).set({
                     username: userData.username,
+                    password: userData.password,
                     gender: userData.gender,
                     ppUrl: userData.ppUrl,
-                    status: "online"
+                    status: userData.status
                 });
             }
-            
             loadApplicationData();
         }
 
         function loadApplicationData() {
             document.getElementById('profile-user-name').innerText = userData.username;
-            document.querySelectorAll('.user-pp-sync').forEach(img => img.src = userData.ppUrl);
+            const userImg = document.getElementById('user-pp-element');
+            const avatarBox = document.getElementById('profile-avatar-box');
+            
+            if(userData.ppUrl) {
+                userImg.src = userData.ppUrl; userImg.style.display = 'block';
+                avatarBox.classList.remove('pp-display-style');
+            } else {
+                userImg.style.display = 'none'; avatarBox.classList.add('pp-display-style');
+            }
 
-            // Ekranı doğrudan uygulamaya geçir
             document.getElementById('screen-gender').classList.add('hidden');
             document.getElementById('screen-register').classList.add('hidden');
             document.getElementById('screen-pp').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
 
-            listenActiveUsers();
-        }
-
-        // Canlı Kayıt Olan Kişileri Listeleme Modülü
-        function listenActiveUsers() {
-            const usersDom = document.getElementById('active-users-dom');
-            
-            if(db) {
-                db.ref('users').on('value', (snapshot) => {
-                    usersDom.innerHTML = '';
-                    const data = snapshot.val();
-                    for(let id in data) {
-                        if(id === userData.username) continue; // Kendini listede gösterme
-                        createUserElement(data[id]);
-                    }
-                });
+            // Admin Kontrolü
+            if(userData.username === 'beratozer' && userData.password === 'babanız') {
+                document.getElementById('admin-panel-area').classList.remove('hidden');
+                document.getElementById('account-status-text').innerText = "Durum: Kurucu Kurucu (Admin)";
             } else {
-                // Firebase yoksa arkadaş davet edebilmen için örnek bir davet tetikleyici yapı bırakıyorum
-                usersDom.innerHTML = `
-                    <p style="color:#666; text-align:center; font-size:0.9rem; padding:20px;">
-                        Şu an canlı bağlantı simüle ediliyor. Arkadaşlarına bu GitHub Pages linkini gönderip kayıt olmalarını sağla, hepsi burada anlık belirecek!
-                    </p>
-                `;
+                document.getElementById('account-status-text').innerText = "Durum: " + userData.status.toUpperCase();
             }
+
+            listenFirebaseData();
         }
 
-        function createUserElement(user) {
-            const usersDom = document.getElementById('active-users-dom');
-            const item = document.createElement('div');
-            item.classList.add('user-item');
-            item.innerHTML = `
-                <div class="user-meta">
-                    <img src="${user.ppUrl}" class="user-avatar">
-                    <h4>${user.username}</h4>
-                </div>
-                <div class="online-dot"></div>
-            `;
-            item.onclick = () => alert(`${user.username} ile canlı mesajlaşma odası kuruluyor...`);
-            usersDom.appendChild(item);
+        function listenFirebaseData() {
+            if(!db) return simulateUsers();
+
+            // Kendi onay durumunu anlık takip et
+            db.ref('users/' + userData.username + '/status').on('value', (snap) => {
+                if(snap.val()) {
+                    userData.status = snap.val();
+                    localStorage.setItem('berostyle_session', JSON.stringify(userData));
+                    if(userData.username !== 'beratozer') {
+                        document.getElementById('account-status-text').innerText = "Durum: " + userData.status.toUpperCase();
+                    }
+                }
+            });
+
+            // Tüm kullanıcıları dinle
+            db.ref('users').on('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                allApprovedUsers = [];
+                const pendingUsers = [];
+
+                for(let id in data) {
+                    if(data[id].status === 'onaylı') {
+                        if(data[id].username !== userData.username) allApprovedUsers.push(data[id]);
+                    } else if(data[id].status === 'bekliyor') {
+                        pendingUsers.push(data[id]);
+                    }
+                }
+
+                renderApprovedUsers(allApprovedUsers);
+                if(userData.username === 'beratozer') renderPendingUsers(pendingUsers);
+            });
         }
 
-        function logout() {
-            if(db) db.ref('users/' + userData.username).remove();
-            localStorage.removeItem('berostyle_session');
-            location.reload();
+        function renderApprovedUsers(list) {
+            const dom = document.getElementById('active-users-dom');
+            dom.innerHTML = '';
+            
+            if(userData.status !== 'onaylı' && userData.username !== 'beratozer') {
+                dom.innerHTML = `<p style="color:#666; font-size:0.85rem; text-align:center; padding:10px;">Hesabınız henüz admin tarafından onaylanmadığı için önerilen kişileri göremezsiniz.</p>`;
+                return;
+            }
+
+            if(list.length === 0) {
+                dom.innerHTML = `<p style="color:#444; font-size:0.85rem; text-align:center; padding:10px;">Önerilen arkadaş bulunamadı.</p>`;
+                return;
+            }
+
+            list.forEach(user => {
+                const item = document.createElement('div');
+                item.classList.add('user-item');
+                
+                let ppTemplate = user.ppUrl 
+                    ? `<img src="${user.ppUrl}" class="user-avatar">` 
+                    : `<div class="user-avatar pp-display-style"></div>`;
+
+                item.innerHTML = `
+                    <div class="user-meta">
+                        ${ppTemplate}
+                        <h4>${user.username}</h4>
+                    </div>
+                    <button class="approve-btn" style="background:%23111; color:%2300f2fe; border:1px solid %2300f2fe;" onclick="alert('${user.username} odası açılıyor...')">Mesaj</button>
+                `;
+                dom.appendChild(item);
+            });
         }
 
-        function switchScreen(fromId, toId) {
-            document.getElementById(fromId).classList.add('hidden');
-            document.getElementById(toId).classList.remove('hidden');
+        function renderPendingUsers(list) {
+            const dom = document.getElementById('pending-users-dom');
+            dom.innerHTML = '';
+            if(list.length === 0) { dom.innerHTML = `<p style="color:#666; font-size:0.85rem;">Bekleyen katılım isteği yok kanka.</p>`; return; }
+
+            list.forEach(user => {
+                const item = document.createElement('div');
+                item.classList.add('user-item');
+                item.innerHTML = `
+                    <div class="user-meta">
+                        <div class="user-avatar pp-display-style" style="width:35px; height:35px;"></div>
+                        <h5>${user.username}</h5>
+                    </div>
+                    <button class="approve-btn" onclick="approveUser('${user.username}')">Onayla</button>
+                `;
+                dom.appendChild(item);
+            });
         }
 
+        function approveUser(username) {
+            if(db) db.ref('users/' + username).update({ status: 'onaylı' });
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('search-box').value.toLowerCase().trim();
+            const filtered = allApprovedUsers.filter(u => u.username.includes(query));
+            renderApprovedUsers(filtered);
+        }
+
+        function logout() { localStorage.removeItem('berostyle_session'); location.reload(); }
+        function switchScreen(fromId, toId) { document.getElementById(fromId).classList.add('hidden'); document.getElementById(toId).classList.remove('hidden'); }
         function switchTab(tabName) {
-            document.getElementById('tab-story').classList.remove('active');
-            document.getElementById('tab-dm').classList.remove('active');
-            document.getElementById('tab-profile').classList.remove('active');
-            document.getElementById('nav-story').classList.remove('active');
-            document.getElementById('nav-dm').classList.remove('active');
-            document.getElementById('nav-profile').classList.remove('active');
-
-            document.getElementById('tab-' + tabName).classList.add('active');
-            document.getElementById('nav-' + tabName).classList.add('active');
+            document.getElementById('tab-story').classList.remove('active'); document.getElementById('tab-dm').classList.remove('active'); document.getElementById('tab-profile').classList.remove('active');
+            document.getElementById('nav-story').classList.remove('active'); document.getElementById('nav-dm').classList.remove('active'); document.getElementById('nav-profile').classList.remove('active');
+            document.getElementById('tab-' + tabName).classList.add('active'); document.getElementById('nav-' + tabName).classList.add('active');
+        }
+        function simulateUsers() {
+            document.getElementById('active-users-dom').innerHTML = `<p style="color:#444; font-size:0.85rem; text-align:center; padding:10px;">Firebase bağlantısı kurulduğunda admin onay sistemi ve arama çubuğu tam senkronize çalışacaktır kanka.</p>`;
         }
     </script>
 </body>
