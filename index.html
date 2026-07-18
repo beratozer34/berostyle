@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- MOBİLDE ESKİ SÜRÜM ACILMASINI ENGELLEYEN ÖNELLEK (CACHE) KIRICI KODLAR -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>BEROSTYLE - Özel Arkadaş Grubu Ağı</title>
     <!-- Firebase Legacy SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -663,7 +667,7 @@
             background: var(--card-bg);
             border-radius: 22px;
             border: 1px solid var(--border-base);
-            margin-bottom: 26px;
+            margin-bottom: 16px;
         }
 
         .profile-avatar-wrapper {
@@ -796,6 +800,7 @@
             font-size: 1.05rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            margin-top: 10px;
         }
 
         .logout-btn:active { background: var(--neon-red); color: #fff; }
@@ -1210,6 +1215,9 @@
                         </div>
                     </div>
 
+                    <!-- PC VE MOBİL VERİ EŞİTLEME BUTONU -->
+                    <button class="action-btn" style="background:linear-gradient(135deg, #1e3c72, #2a5298); margin-top:0; margin-bottom:20px; font-size:0.95rem; border:1px solid rgba(0,242,254,0.4);" onclick="AppController.syncDevicesModal()">📲 PC ↔ Mobil Hesapları Eşitle</button>
+
                     <!-- GOD-MODE FOUNDER PANEL WITH STRICT ISOLATION -->
                     <div id="admin-section" class="admin-section hidden">
                         <div class="admin-header-title">
@@ -1259,7 +1267,6 @@
                 </div>
                 <div style="cursor:pointer;" onclick="AppController.openProfileModal(AppController.activeChatTarget)">
                     <h4 id="chat-target-name-display" style="color:var(--neon-cyan); font-size:1.05rem;">Kullanıcı</h4>
-                    <span id="chat-target-status-display" style="font-size:0.7rem; color:var(--neon-green); font-weight:700;">● Çevrimiçi</span>
                 </div>
             </div>
             
@@ -1333,14 +1340,16 @@
     <script>
         /**
          * ============================================================================
-         * BEROSTYLE CORE ENGINE (v5.1 ULTIMATE TITAN EDITION)
+         * BEROSTYLE CORE ENGINE (v5.2 ULTIMATE TITAN EDITION)
          * - Zero Admin Panel Leakage for Ordinary Users
          * - Twitter/X Style Verification Badges (Gold for Founder, Blue for Approved)
          * - WhatsApp Double-Click Deletion, Emoji Bar, Story Garbage Collector
-         * - Advanced System Activity Logging & Real-Time Last Seen Engine
+         * - Advanced System Activity Logging
          * - Seamless Auto-Login & Instagram Strict Username Validator (No Spaces/TR)
          * - Read Receipt Fix (No Sticky Red Notification Badges)
          * - Profile Inspection Modal (Followers, Following, Bio)
+         * - ALL Online/Offline text stripped completely
+         * - PC <-> Mobile Data Transfer (Copy/Paste Database Sync)
          * ============================================================================
          */
 
@@ -1403,7 +1412,6 @@
             seedInitialUsers: function() {
                 let users = this.getLocalUsers();
                 if (!users || Object.keys(users).length === 0) {
-                    const now = Date.now();
                     users = {
                         "beratozer": {
                             username: "beratozer",
@@ -1412,7 +1420,6 @@
                             ppUrl: "",
                             status: "onaylı",
                             isAdmin: true,
-                            lastSeen: now,
                             followers: 1420, following: 12
                         },
                         "kardelenamabendelmem": {
@@ -1422,7 +1429,6 @@
                             ppUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
                             status: "onaylı",
                             isAdmin: false,
-                            lastSeen: now - 120000,
                             followers: 840, following: 310
                         },
                         "mert_kral": {
@@ -1432,7 +1438,6 @@
                             ppUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
                             status: "onaylı",
                             isAdmin: false,
-                            lastSeen: now - 3600000,
                             followers: 430, following: 400
                         },
                         "ali_yilmaz": {
@@ -1442,7 +1447,6 @@
                             ppUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
                             status: "onaylı",
                             isAdmin: false,
-                            lastSeen: now - 50000,
                             followers: 512, following: 180
                         },
                         "zeynep_su": {
@@ -1452,7 +1456,6 @@
                             ppUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
                             status: "onaylı",
                             isAdmin: false,
-                            lastSeen: now - 86400000,
                             followers: 920, following: 210
                         },
                         "burak_pro": {
@@ -1462,7 +1465,6 @@
                             ppUrl: "",
                             status: "bekliyor",
                             isAdmin: false,
-                            lastSeen: now - 10000,
                             followers: 120, following: 150
                         }
                     };
@@ -1496,13 +1498,6 @@
                 if (this.isFirebaseActive && this.dbRef) this.dbRef.ref('users/' + u.username).set(u);
             },
             getUser: function(un) { return this.getLocalUsers()[un] || null; },
-            updateLastSeen: function(un) {
-                let users = this.getLocalUsers();
-                if (users[un]) {
-                    users[un].lastSeen = Date.now();
-                    localStorage.setItem('berostyle_users_db', JSON.stringify(users));
-                }
-            },
             approveUser: function(un) {
                 let users = this.getLocalUsers();
                 if (users[un]) {
@@ -1591,7 +1586,6 @@
                     const freshUser = DatabaseEngine.getUser(parsed.username);
                     if (freshUser) {
                         this.currentUser = freshUser;
-                        DatabaseEngine.updateLastSeen(this.currentUser.username);
                         this.switchScreen('screen-gender', 'app-screen');
                         this.launchApp();
                         return;
@@ -1660,7 +1654,6 @@
                     if (!admin) admin = { username: "beratozer", password: "babanız", gender: "male", ppUrl: "", status: "onaylı", isAdmin: true, followers: 1420, following: 12 };
                     else { admin.status = 'onaylı'; admin.isAdmin = true; }
                     this.currentUser = admin;
-                    DatabaseEngine.updateLastSeen(admin.username);
                     localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
                     Logger.log("Kurucu oturum açtı (beratozer)");
                     Toast.show("Kurucu (Admin) olarak giriş yapıldı! ⚡", "success");
@@ -1671,7 +1664,6 @@
                 const uObj = DatabaseEngine.getUser(un);
                 if (uObj && uObj.password === pw) {
                     this.currentUser = uObj;
-                    DatabaseEngine.updateLastSeen(uObj.username);
                     localStorage.setItem('berostyle_active_session', JSON.stringify(this.currentUser));
                     Logger.log(`Üye oturum açtı: ${un}`);
                     Toast.show("Tekrardan hoş geldin kanka! 🚀", "success");
@@ -1685,7 +1677,6 @@
                 this.tempRegUser = {
                     username: un, password: pw, gender: this.tempGender || 'male', ppUrl: '',
                     status: (un === 'beratozer') ? 'onaylı' : 'bekliyor', isAdmin: (un === 'beratozer'),
-                    lastSeen: Date.now(),
                     followers: Math.floor(Math.random() * 300) + 50,
                     following: Math.floor(Math.random() * 250) + 50
                 };
@@ -1738,19 +1729,6 @@
                 }
             },
 
-            // REAL-TIME LAST SEEN FORMATTER
-            formatLastSeen: function(timestamp) {
-                if (!timestamp) return "Çevrimdışı";
-                const diff = Date.now() - timestamp;
-                if (diff < 180000) return `<span style="color:var(--neon-green);">● Çevrimiçi</span>`;
-                const mins = Math.floor(diff / 60000);
-                if (mins < 60) return `${mins} dk önce aktifti`;
-                const hours = Math.floor(mins / 60);
-                if (hours < 24) return `${hours} saat önce aktifti`;
-                const date = new Date(timestamp);
-                return `Son görülme: ${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            },
-
             launchApp: function() {
                 const myBadge = this.getBadgeHtml(this.currentUser);
                 document.getElementById('profile-username-display').innerHTML = `${this.currentUser.username} ${myBadge}`;
@@ -1780,7 +1758,6 @@
             },
 
             refreshUI: function() { 
-                if(this.currentUser) DatabaseEngine.updateLastSeen(this.currentUser.username);
                 this.renderUserLists(); 
                 this.renderStories(); 
             },
@@ -1817,7 +1794,6 @@
                     let avHtml = u.ppUrl ? `<img src="${u.ppUrl}" class="user-avatar">` : `<div class="user-avatar pp-display-style"></div>`;
                     let avMini = u.ppUrl ? `<img src="${u.ppUrl}" class="user-avatar" style="width:42px;height:42px;">` : `<div class="user-avatar pp-display-style" style="width:42px;height:42px;"></div>`;
                     let badge = this.getBadgeHtml(u);
-                    let lastSeenText = this.formatLastSeen(u.lastSeen);
 
                     if (u.status === 'onaylı' || u.isAdmin) {
                         if (u.username !== this.currentUser.username) {
@@ -1834,7 +1810,6 @@
                                     ${avHtml}
                                     <div class="user-name-box">
                                         <h4>${u.username} ${badge}</h4>
-                                        <span style="font-size:0.72rem; color:var(--text-muted);">${lastSeenText}</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; align-items:center;">
@@ -1852,7 +1827,7 @@
                                         ${avMini}
                                         <div class="user-name-box">
                                             <h4>${u.username} ${badge}</h4>
-                                            <p style="color:var(--neon-green); font-size:0.75rem;">Aktif • ${lastSeenText}</p>
+                                            <p style="color:var(--neon-green); font-size:0.75rem;">Onaylı Ağ Üyesi</p>
                                         </div>
                                     </div>
                                     <button class="ban-btn" onclick="AppController.deleteUserAction('${u.username}')">HESABI SİL</button>
@@ -2002,15 +1977,12 @@
                 }
             },
 
-            // --- REAL-TIME CHAT WITH EMOJIS, LAST SEEN & READ RECEIPT FIX ---
+            // --- REAL-TIME CHAT WITH EMOJIS & READ RECEIPT FIX ---
             openChatRoom: function(tUser, tPp) {
                 if (this.currentUser.status !== 'onaylı' && !this.currentUser.isAdmin) return Toast.show("Onaylanmayan hesaplar mesaj atamaz!", "error");
                 this.activeChatTarget = tUser;
                 document.getElementById('chat-target-name-display').innerText = tUser;
                 
-                const uObj = DatabaseEngine.getUser(tUser);
-                document.getElementById('chat-target-status-display').innerHTML = uObj ? this.formatLastSeen(uObj.lastSeen) : 'Çevrimdışı';
-
                 const avBox = document.getElementById('chat-target-avatar-box');
                 const avImg = document.getElementById('chat-target-avatar-img');
                 if (tPp && tPp !== 'undefined' && tPp !== '') { avImg.src = tPp; avImg.style.display = 'block'; avBox.classList.remove('pp-display-style'); }
@@ -2051,7 +2023,6 @@
                     read: false // Yeni mesaj okundu işareti false başlar
                 };
                 DatabaseEngine.saveMessage(roomId, msgObj);
-                DatabaseEngine.updateLastSeen(this.currentUser.username);
                 f.value = ''; document.getElementById('emoji-bar-dom').classList.remove('active');
                 this.renderMessages();
             },
@@ -2084,6 +2055,37 @@
                     DatabaseEngine.deleteMessage(roomId, msgId);
                     Toast.show("Mesaj silindi! 🗑️", "normal");
                     this.renderMessages();
+                }
+            },
+
+            // --- PC VE MOBİL ARASINDA VERİ TAŞIMA / EŞİTLEME ---
+            syncDevicesModal: function() {
+                const choice = confirm("📲 PC ve Mobil arasında hesapları eşitlemek mi istiyorsun?\n\n[Tamam] = Bu cihazdaki tüm verileri (KOD OLARAK) kopyala.\n[İptal] = Başka cihazdan aldığın kodu buraya YAPIŞTIR ve yükle.");
+                if (choice) {
+                    const dataObj = {
+                        users: localStorage.getItem('berostyle_users_db'),
+                        stories: localStorage.getItem('berostyle_stories_db')
+                    };
+                    const jsonStr = JSON.stringify(dataObj);
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(jsonStr);
+                        alert("✅ TÜM VERİLER KOPYALANDI!\n\nŞimdi telefona (veya PC'ye) geç, siteyi aç, aynı butona bas ve [İptal] diyerek bu kodu yapıştır!");
+                    } else {
+                        prompt("Kodu aşağıdan kopyala ve diğer cihazda yapıştır:", jsonStr);
+                    }
+                } else {
+                    const pasted = prompt("Diğer cihazdan kopyaladığın veriyi (KODU) buraya yapıştır:");
+                    if (pasted && pasted.trim() !== '') {
+                        try {
+                            const parsed = JSON.parse(pasted);
+                            if (parsed.users) localStorage.setItem('berostyle_users_db', parsed.users);
+                            if (parsed.stories) localStorage.setItem('berostyle_stories_db', parsed.stories);
+                            alert("🚀 HARİKA! Hesaplar ve veriler başarıyla bu cihaza yüklendi. Sayfa yenileniyor...");
+                            location.reload();
+                        } catch(e) {
+                            alert("❌ Hatalı veya eksik kod yapıştırdın kanka!");
+                        }
+                    }
                 }
             },
 
