@@ -1664,12 +1664,16 @@ x<!DOCTYPE html>
                         firebase.initializeApp(firebaseConfig);
                     }
                     this.dbRef = firebase.database();
-                    firebase.auth().signInAnonymously().catch((err) => {
-                        console.error("Anonim giriş hatası:", err);
-                    });
-                    console.log("🔥 BEROSTYLE BULUT VERİTABANINA BAĞLANDI!");
-                    this.startRealtimeListeners();
-                } catch (e) {
+                    firebase.auth().onAuthStateChanged((user) => {
+                        if (user) {
+                            console.log("🔥 BEROSTYLE BULUT VERİTABANINA BAĞLANDI!");
+                            this.startRealtimeListeners();
+                        } else {
+                            firebase.auth().signInAnonymously().catch((err) => {
+                                console.error("Anonim giriş hatası:", err);
+                            });
+                        }
+                    });                } catch (e) {
                     console.error("Firebase başlatma hatası:", e);
                 }
             },
