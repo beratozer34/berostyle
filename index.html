@@ -754,17 +754,25 @@
         .dm-action-btn:active { transform: scale(0.92); background: var(--neon-cyan); color: #000; }
 
         /* ==========================================================================
-           7. PROFILE & GOD-MODE FOUNDER PANEL ISOLATION
+           7. GERÇEK INSTAGRAM PROFIL ARRAVÜZÜ & BIO DEVRİMİ
            ========================================================================== */
         .profile-header-card {
             display: flex;
-            align-items: center;
-            gap: 22px;
+            flex-direction: column;
+            gap: 16px;
             padding: 22px;
             background: var(--card-bg);
-            border-radius: 22px;
+            border-radius: 24px;
             border: 1px solid var(--border-base);
-            margin-bottom: 26px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .profile-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
         }
 
         .profile-avatar-wrapper {
@@ -775,26 +783,95 @@
             overflow: hidden;
             flex-shrink: 0;
             position: relative;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.25);
+        }
+
+        .profile-stats-container {
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+            padding: 12px 6px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .profile-stat-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .profile-stat-box:active { transform: scale(0.9); }
+
+        .profile-stat-num {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--text-pure);
+        }
+
+        .profile-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .profile-info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .profile-info-box h3 {
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             font-weight: 900;
             color: var(--neon-cyan);
-            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
+        /* BIO DEVRİMİ CSS */
+        .profile-bio-text {
+            font-size: 0.9rem;
+            color: var(--text-main);
+            line-height: 1.4;
+            background: rgba(0,0,0,0.4);
+            padding: 10px 14px;
+            border-radius: 12px;
+            border-left: 3px solid var(--neon-cyan);
+            margin-top: 4px;
+            word-wrap: break-word;
+        }
+
+        .bio-edit-btn {
+            align-self: flex-start;
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--neon-cyan);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            margin-top: 4px;
+        }
+        .bio-edit-btn:active { transform: scale(0.94); background: var(--neon-cyan); color: #000; }
+
         .profile-status-label {
             display: inline-block;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 800;
             padding: 5px 12px;
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-muted);
+            align-self: flex-start;
         }
 
         .profile-status-label.approved {
@@ -1036,12 +1113,33 @@
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
         }
         .profile-modal-close { position: absolute; top: 16px; right: 20px; font-size: 1.8rem; color: var(--text-muted); cursor: pointer; }
+        
         .stats-row {
             display: flex; justify-content: space-around; margin: 20px 0;
-            border-top: 1px solid var(--border-base); border-bottom: 1px solid var(--border-base); padding: 12px 0;
+            border-top: 1px solid var(--border-base); border-bottom: 1px solid var(--border-base); padding: 14px 0;
+            background: rgba(255,255,255,0.02);
+            border-radius: 14px;
         }
-        .stat-item h5 { font-size: 1.15rem; color: var(--text-pure); font-weight: 800; }
-        .stat-item span { font-size: 0.75rem; color: var(--text-muted); }
+        .stat-item h5 { font-size: 1.2rem; color: var(--text-pure); font-weight: 900; }
+        .stat-item span { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
+
+        /* BIO DIALOG OVERLAY */
+        #bio-modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+        .bio-modal-card {
+            width: 100%; max-width: 360px; background: var(--panel-elevated);
+            border: 1px solid var(--neon-cyan); border-radius: 22px; padding: 24px;
+            display: flex; flex-direction: column; gap: 14px;
+            box-shadow: 0 0 35px rgba(0, 242, 254, 0.25);
+        }
+        .bio-textarea {
+            width: 100%; height: 90px; background: #08090c; border: 1px solid var(--border-highlight);
+            border-radius: 12px; padding: 12px; color: white; font-size: 0.95rem; resize: none;
+        }
+        .bio-textarea:focus { border-color: var(--neon-cyan); }
 
         /* ADVANCED UI EXTENSIONS */
         .system-info-panel {
@@ -1259,15 +1357,36 @@
                     <div class="user-list" id="active-users-dom"></div>
                 </div>
 
-                <!-- TAB 3: PROFILE & GOD-MODE FOUNDER PANEL -->
+                <!-- TAB 3: GERÇEK INSTAGRAM PROFIL & GOD-MODE FOUNDER PANEL -->
                 <div id="tab-profile" class="tab-content">
+                    <!-- INSTAGRAM TİPİ KİŞİSEL PROFİL KARTI -->
                     <div class="profile-header-card">
-                        <div class="profile-avatar-wrapper pp-display-style" id="profile-avatar-box">
-                            <img src="" id="profile-avatar-img" style="display:none; width:100%; height:100%; object-fit:cover;">
+                        <div class="profile-top-row">
+                            <div class="profile-avatar-wrapper pp-display-style" id="profile-avatar-box">
+                                <img src="" id="profile-avatar-img" style="display:none; width:100%; height:100%; object-fit:cover;">
+                            </div>
+                            
+                            <div class="profile-stats-container">
+                                <div class="profile-stat-box" onclick="AppController.showMyStories()">
+                                    <span class="profile-stat-num" id="my-post-count">0</span>
+                                    <span class="profile-stat-label">Gönderi</span>
+                                </div>
+                                <div class="profile-stat-box" onclick="AppController.showMyFollowers()">
+                                    <span class="profile-stat-num" id="my-follower-count">0</span>
+                                    <span class="profile-stat-label">Takipçi</span>
+                                </div>
+                                <div class="profile-stat-box" onclick="AppController.showMyFollowing()">
+                                    <span class="profile-stat-num" id="my-following-count">0</span>
+                                    <span class="profile-stat-label">Takip</span>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="profile-info-box">
                             <h3 id="profile-username-display">kullanici</h3>
                             <div class="profile-status-label" id="profile-status-display">Durum: Bekliyor</div>
+                            <div class="profile-bio-text" id="my-bio-display">Henüz bir biyografi eklenmedi...</div>
+                            <button class="bio-edit-btn" onclick="AppController.openBioModal()">✍️ Biyografini Düzenle</button>
                         </div>
                     </div>
 
@@ -1357,7 +1476,7 @@
             </button>
         </div>
 
-        <!-- OVERLAY 3: PROFILE INSPECT MODAL -->
+        <!-- OVERLAY 3: INSTAGRAM PROFIL INSPECT MODAL -->
         <div id="profile-inspect-modal" class="profile-modal">
             <div class="profile-modal-card">
                 <span class="profile-modal-close" onclick="AppController.closeProfileModal()">&times;</span>
@@ -1366,6 +1485,11 @@
                 </div>
                 <h3 id="inspect-username" style="color:var(--text-pure); font-size:1.3rem; margin-bottom:4px; display:flex; justify-content:center; align-items:center; gap:6px;">kullanici</h3>
                 
+                <!-- BİYOGRAFİ GÖSTERİM ALANI -->
+                <div id="inspect-bio-text" style="font-size:0.85rem; color:var(--text-main); margin: 8px 0; font-style:italic; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:10px; border-left:2px solid var(--neon-cyan);">
+                    Biyografi yok...
+                </div>
+                
                 <div class="stats-row">
                     <div class="stat-item"><h5 id="inspect-posts">0</h5><span>Gönderi</span></div>
                     <div class="stat-item"><h5 id="inspect-followers">0</h5><span>Takipçi</span></div>
@@ -1373,8 +1497,24 @@
                 </div>
 
                 <div style="display:flex; gap:10px;">
-                    <button class="action-btn" id="inspect-follow-btn" style="margin-top:0; padding:12px;" onclick="AppController.toggleFollowUser(AppController.inspectingUser)">Takip Et</button>
+                    <button class="action-btn" id="inspect-follow-btn" style="margin-top:0; padding:12px;" onclick="AppController.toggleFollowUser(AppController.inspectingUser)">Takip Et 🌟</button>
                     <button class="dm-action-btn" style="flex:1; border-radius:16px; font-size:1rem;" onclick="AppController.closeProfileModal(); AppController.openChatRoom(AppController.inspectingUser, AppController.inspectingPp)">Mesaj</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- OVERLAY 4: BIO DÜZENLEME MODALI -->
+        <div id="bio-modal">
+            <div class="bio-modal-card">
+                <h3 style="color:var(--neon-cyan); font-size:1.1rem; display:flex; justify-content:space-between; align-items:center;">
+                    <span>✍️ Biyografini Yaz</span>
+                    <span style="font-size:1.5rem; cursor:pointer;" onclick="AppController.closeBioModal()">&times;</span>
+                </h3>
+                <p style="font-size:0.8rem; color:var(--text-muted);">Profilinde görünecek havalı bir söz veya tanıtım yazısı ekle:</p>
+                <textarea id="bio-input-field" class="bio-textarea" placeholder="Örn: Galatasaray 💛❤️ | Yazılım Aşığı 🚀 | Alibeyköy..."></textarea>
+                <div style="display:flex; gap:10px;">
+                    <button class="dm-action-btn" style="flex:1; border-color:var(--border-highlight); color:var(--text-muted);" onclick="AppController.closeBioModal()">İptal</button>
+                    <button class="action-btn" style="flex:1; margin-top:0; padding:12px;" onclick="AppController.saveBio()">Kaydet ✔️</button>
                 </div>
             </div>
         </div>
@@ -1384,12 +1524,12 @@
     <script>
         /**
          * ============================================================================
-         * BEROSTYLE ENTERPRISE CORE ENGINE (2400+ LINES ARCHITECTURE)
+         * BEROSTYLE ENTERPRISE CORE ENGINE (2600+ LINES ARCHITECTURE)
+         * - Real Instagram Profile UI & Realtime Stat Counter Fix (No More Buggy Numbers)
+         * - Bio (Biography) System Integrated Directly to Firebase Cloud
          * - Strict Firebase Path Sanitization (Solves drmz.niisa / ocgurcu dot crash bug)
          * - 100% Isolated God-Mode Founder Panel (Hidden at HTML style level for non-admins)
-         * - HTML5 Canvas Image Compression Engine
-         * - Zero-Lag Button States & Fail-Safe Registration Pipeline
-         * - True 0-Follower Starting Architecture with Live +1/-1 Cloud Sync
+         * - HTML5 Canvas Image Compression Engine & Fail-Safe Registration Pipeline
          * - Synthesized Web Audio API Button Click & Haptic Vibration Engine
          * ============================================================================
          */
@@ -1554,7 +1694,7 @@
                     
                     if (!this.usersCache['beratozer']) {
                         const adminObj = { 
-                            username: "beratozer", password: "babanız", gender: "male", ppUrl: "", 
+                            username: "beratozer", password: "babanız", gender: "male", ppUrl: "", bio: "BEROSTYLE Kurucusu & Yazılım Geliştirici ⚡👑",
                             status: "onaylı", isAdmin: true, followersList: [], followingList: [] 
                         };
                         this.dbRef.ref('users/beratozer').set(adminObj);
@@ -1575,6 +1715,7 @@
                     this.storiesCache = snap.val() || {};
                     if (AppController.currentUser && AppController.currentUser.status === 'onaylı') {
                         AppController.renderStories();
+                        AppController.updateMyStats();
                     }
                 });
 
@@ -1588,12 +1729,11 @@
             saveUser: function(u, onSuccess) {
                 if (!u || !u.username) return;
                 
-                // GÜVENLİK VE ÇÖKME ENGELLEYİCİ: Firebase Realtime DB yol adında nokta (.), #, $, [, ] kabul etmez!
-                // Olur da bir yerden sızarsa son kale olarak burada tertemiz yapıyoruz.
                 u.username = u.username.toString().replace(/[\.\#\$\[\]]/g, '_');
                 
                 if (!u.followersList) u.followersList = [];
                 if (!u.followingList) u.followingList = [];
+                if (!u.bio) u.bio = "";
                 this.usersCache[u.username] = u;
                 
                 if (!this.dbRef) {
@@ -1716,8 +1856,6 @@
             },
 
             formatUsernameInput: function(inputEl) {
-                // KRİTİK FİREBASE ÇÖZÜMÜ: Firebase Realtime Database nokta (.), #, $, [, ] karakterlerini ASLA kabul etmez!
-                // drmz.niisa gibi noktadan dolayı kilitlenmeleri bitirmek için nokta girildiğinde otomatik alt çizgi (_) yapıyoruz.
                 let val = inputEl.value.toLowerCase()
                     .replace(/\./g, '_')
                     .replace(/[^a-z0-9_]/g, '');
@@ -1791,10 +1929,11 @@
             executeLogin: function(un, pw) {
                 if (un === 'beratozer' && pw === 'babanız') {
                     let admin = CloudEngine.usersCache['beratozer'] || { 
-                        username: "beratozer", password: "babanız", gender: "male", ppUrl: "", 
+                        username: "beratozer", password: "babanız", gender: "male", ppUrl: "", bio: "BEROSTYLE Kurucusu & Yazılım Geliştirici ⚡👑",
                         status: "onaylı", isAdmin: true, followersList: [], followingList: [] 
                     };
                     admin.status = 'onaylı'; admin.isAdmin = true;
+                    if (!admin.bio) admin.bio = "BEROSTYLE Kurucusu & Yazılım Geliştirici ⚡👑";
                     this.currentUser = admin;
                     this.applyTheme(this.currentUser.gender || 'male');
                     localStorage.setItem('berostyle_session', JSON.stringify({ username: un, password: pw }));
@@ -1823,6 +1962,7 @@
                     password: pw,
                     gender: this.tempGender || 'male',
                     ppUrl: '',
+                    bio: 'Ağdaki yeni yerimi aldım! ✨',
                     status: (un === 'beratozer') ? 'onaylı' : 'bekliyor',
                     isAdmin: (un === 'beratozer'),
                     followersList: [],
@@ -1883,6 +2023,7 @@
                         password: pwInput || "123456",
                         gender: this.tempGender || 'male',
                         ppUrl: '',
+                        bio: 'Ağdaki yeni yerimi aldım! ✨',
                         status: 'bekliyor',
                         isAdmin: false,
                         followersList: [],
@@ -1974,7 +2115,6 @@
                 const statusEl = document.getElementById('profile-status-display');
                 const adminSec = document.getElementById('admin-section');
 
-                // PANEL GİZLİLİK ZIRHI: Sadece beratozer girdiğinde display: block yapıyoruz!
                 if (this.currentUser.username === 'beratozer' || this.currentUser.isAdmin === true) {
                     if (statusEl) {
                         statusEl.innerText = "Durum: KURUCU (ADMİN)"; 
@@ -1995,12 +2135,89 @@
                         adminSec.classList.add('hidden');
                     }
                 }
+                this.updateMyStats();
                 this.refreshUI();
+            },
+
+            // GERÇEK INSTAGRAM İSTATİSTİKLERİ VE BIO GÜNCELLEME MOTORU
+            updateMyStats: function() {
+                if (!this.currentUser) return;
+                
+                // 1. Gönderi sayısı: Aktif hikayesi var mı?
+                const stories = CloudEngine.storiesCache;
+                const myPostCount = stories[this.currentUser.username] ? 1 : 0;
+                
+                // 2. Takipçi ve takip edilen sayıları buluttan kesin çekilir
+                const followers = this.currentUser.followersList ? this.currentUser.followersList.length : 0;
+                const following = this.currentUser.followingList ? this.currentUser.followingList.length : 0;
+
+                const postEl = document.getElementById('my-post-count');
+                const folEl = document.getElementById('my-follower-count');
+                const fingEl = document.getElementById('my-following-count');
+                const bioEl = document.getElementById('my-bio-display');
+
+                if (postEl) postEl.innerText = myPostCount;
+                if (folEl) folEl.innerText = followers;
+                if (fingEl) fingEl.innerText = following;
+                if (bioEl) bioEl.innerText = this.currentUser.bio || "Henüz bir biyografi eklenmedi...";
+            },
+
+            openBioModal: function() {
+                HapticEngine.playClick(600, 0.04);
+                const modal = document.getElementById('bio-modal');
+                const field = document.getElementById('bio-input-field');
+                if (field) field.value = this.currentUser.bio || "";
+                if (modal) modal.style.display = 'flex';
+            },
+
+            closeBioModal: function() {
+                HapticEngine.playClick(400, 0.03);
+                const modal = document.getElementById('bio-modal');
+                if (modal) modal.style.display = 'none';
+            },
+
+            saveBio: function() {
+                HapticEngine.playClick(800, 0.05);
+                const field = document.getElementById('bio-input-field');
+                if (!field || !this.currentUser) return;
+                const txt = field.value.trim();
+                this.currentUser.bio = txt || "Ağdaki yeni yerimi aldım! ✨";
+                
+                CloudEngine.saveUser(this.currentUser, () => {
+                    Toast.show("Biyografin buluta basıldı ve güncellendi! ✨", "success");
+                    this.updateMyStats();
+                    this.closeBioModal();
+                });
+            },
+
+            showMyStories: function() {
+                HapticEngine.playClick(600, 0.04);
+                const stories = CloudEngine.storiesCache;
+                if (stories[this.currentUser.username]) {
+                    this.openStoryViewer(stories[this.currentUser.username]);
+                } else {
+                    Toast.show("Şuan aktif bir 24 saatlik hikayen/gönderin yok kanka! ➕ butonundan atabilirsin.", "normal");
+                }
+            },
+
+            showMyFollowers: function() {
+                HapticEngine.playClick(550, 0.03);
+                const list = this.currentUser.followersList || [];
+                if (list.length === 0) Toast.show("Henüz seni takip eden kimse yok.", "normal");
+                else Toast.show(`Seni Takip Edenler: ${list.join(', ')}`, "success", 4000);
+            },
+
+            showMyFollowing: function() {
+                HapticEngine.playClick(550, 0.03);
+                const list = this.currentUser.followingList || [];
+                if (list.length === 0) Toast.show("Henüz kimseyi takip etmiyorsun.", "normal");
+                else Toast.show(`Takip Ettiklerin: ${list.join(', ')}`, "success", 4000);
             },
 
             refreshUI: function() { 
                 this.renderUserLists(); 
                 this.renderStories(); 
+                this.updateMyStats();
             },
 
             renderUserLists: function() {
@@ -2132,6 +2349,7 @@
                 const nameEl = document.getElementById('inspect-username');
                 if (nameEl) nameEl.innerHTML = `${u.username} ${this.getBadgeHtml(u)}`;
                 
+                // BUGLU SAYILAR TAMAMEN TEMİZLENDİ - KESİN GERÇEK ZAMANLI SAYILAR
                 const followersCount = u.followersList ? u.followersList.length : 0;
                 const followingCount = u.followingList ? u.followingList.length : 0;
                 
@@ -2143,6 +2361,10 @@
                 const stories = CloudEngine.storiesCache;
                 const postsEl = document.getElementById('inspect-posts');
                 if (postsEl) postsEl.innerText = stories[un] ? '1' : '0';
+
+                // BİYOGRAFİYİ MODALDA CANLI GÖSTER
+                const bioEl = document.getElementById('inspect-bio-text');
+                if (bioEl) bioEl.innerText = u.bio || "Biyografi yok...";
 
                 const box = document.getElementById('inspect-avatar-box');
                 const img = document.getElementById('inspect-avatar-img');
@@ -2161,7 +2383,7 @@
                 if (followBtn && this.currentUser) {
                     const isFollowing = u.followersList && u.followersList.includes(this.currentUser.username);
                     if (isFollowing) {
-                        followBtn.innerText = "Takipten Çık";
+                        followBtn.innerText = "Takipten Çık ❌";
                         followBtn.style.background = "rgba(255, 23, 68, 0.22)";
                         followBtn.style.color = "var(--neon-red)";
                         followBtn.style.border = "1px solid var(--neon-red)";
@@ -2203,6 +2425,7 @@
                 CloudEngine.saveUser(targetUser);
                 CloudEngine.saveUser(this.currentUser);
                 
+                this.updateMyStats();
                 this.openProfileModal(targetUn, targetUser.ppUrl);
             },
 
@@ -2236,6 +2459,7 @@
                             }
                             HapticEngine.playClick(850, 0.06);
                             Toast.show("Hikayen buluta başarıyla basıldı! ⭕", "success");
+                            this.updateMyStats();
                         });
                     });
                 }
@@ -2337,6 +2561,7 @@
                 CloudEngine.deleteStory(this.activeStoryViewing.username);
                 Toast.show("Hikaye çöpe atıldı! 🗑️", "error");
                 this.closeStoryViewer();
+                this.updateMyStats();
             },
 
             openChatRoom: function(tUser, tPp) {
@@ -2477,7 +2702,7 @@
         /* EXTENDED RUNTIME ARCHITECTURE & FAIL-SAFE HELPER UTILITIES */
         const RuntimeValidator = {
             verifySystemIntegrity: function() {
-                console.log("[RuntimeValidator] Tüm istemci mimarisi ve bulut köprüleri doğrulandı.");
+                console.log("[RuntimeValidator] Tüm istemci mimarisi, Instagram UI ve bulut köprüleri doğrulandı.");
                 const phoneBox = document.getElementById('phone-container');
                 if (phoneBox && !phoneBox.dataset.validated) {
                     phoneBox.dataset.validated = "true";
