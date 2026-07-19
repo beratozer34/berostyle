@@ -1991,10 +1991,9 @@ sessionStorage.setItem('berostyle_session', JSON.stringify({ username: un, passw
                         this.handleStatusRedirect();
                     });
                 }).catch((err) => {
-                    Toast.show("Kullanıcı adı veya şifre hatalı!", "error");
-                });
-            },
-
+    console.error(err);
+    Toast.show(err.code + " | " + err.message, "error");
+});
             executeRegister: function(un, pw) {
                 if (CloudEngine.usersCache[un]) return Toast.show("Bu kullanıcı adı zaten bulutta kayıtlı!", "error");
                 const fakeEmail = un + "@berostyle.app";
