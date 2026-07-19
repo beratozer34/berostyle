@@ -1802,22 +1802,28 @@ x<!DOCTYPE html>
                 this.dbRef.ref('stories/' + un).remove();
             },
 
-            getMessages: function(roomId) {
-savePost: function(username, postObj, onSuccess) {
-                if (!this.dbRef) return;
-                const postId = 'post_' + Date.now() + Math.random().toString(36).substr(2, 4);
-                this.dbRef.ref('posts/' + username + '/' + postId).set(postObj)
-                    .then(() => { if (onSuccess) onSuccess(); })
-                    .catch((err) => { Toast.show("Gönderi yüklenirken bulut hatası oluştu!", "error"); });
-            },
+          savePost: function(username, postObj, onSuccess) {
+    if (!this.dbRef) return;
+    const postId = 'post_' + Date.now() + Math.random().toString(36).substr(2, 4);
 
-            deletePost: function(username, postId) {
-                if (!this.dbRef) return;
-                this.dbRef.ref('posts/' + username + '/' + postId).remove();
-            },
-                const roomObj = this.messagesCache[roomId] || {};
-                return Object.values(roomObj);
-            },
+    this.dbRef.ref('posts/' + username + '/' + postId).set(postObj)
+        .then(() => {
+            if (onSuccess) onSuccess();
+        })
+        .catch((err) => {
+            Toast.show("Gönderi yüklenirken bulut hatası oluştu!", "error");
+        });
+},
+
+deletePost: function(username, postId) {
+    if (!this.dbRef) return;
+    this.dbRef.ref('posts/' + username + '/' + postId).remove();
+},
+
+getMessages: function(roomId) {
+    const roomObj = this.messagesCache[roomId] || {};
+    return Object.values(roomObj);
+},
 
             saveMessage: function(roomId, msgObj) {
                 if (!this.dbRef) return;
