@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>BEROSTYLE - Özel Arkadaş Grubu Ağı</title>
+    <title>BEROSTYLE v7.0 - Özel Arkadaş Grubu Ağı</title>
     
     <!-- Firebase Compat SDKs (En Stabil Web Sürümü) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -365,9 +365,9 @@
         }
 
         .app-header h2 {
-            font-size: 1.75rem;
+            font-size: 1.6rem;
             font-weight: 900;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             background: linear-gradient(45deg, var(--neon-cyan), var(--neon-blue));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -381,9 +381,16 @@
             border: 1px solid rgba(0, 242, 254, 0.35);
             padding: 6px 14px;
             border-radius: 20px;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-weight: 800;
             color: var(--neon-cyan);
+            transition: all 0.3s;
+        }
+
+        .header-status-badge.offline {
+            background: rgba(255, 23, 68, 0.15);
+            border-color: var(--neon-red);
+            color: var(--neon-red);
         }
 
         .header-status-dot {
@@ -393,6 +400,11 @@
             border-radius: 50%;
             box-shadow: 0 0 10px var(--neon-cyan);
             animation: pulseDot 1.5s infinite;
+        }
+
+        .header-status-badge.offline .header-status-dot {
+            background: var(--neon-red);
+            box-shadow: 0 0 10px var(--neon-red);
         }
 
         @keyframes pulseDot {
@@ -675,7 +687,6 @@
             color: var(--neon-green);
         }
 
-        /* ADMIN PANEL - MEMBER DELETION & BAN SYSTEM */
         .admin-section {
             width: 100%;
             background: linear-gradient(180deg, rgba(0, 242, 254, 0.05) 0%, rgba(11, 12, 15, 0.95) 100%);
@@ -911,7 +922,7 @@
         <!-- SCREEN 2: AUTHENTICATION -->
         <div id="screen-auth" class="screen hidden">
             <div class="top-warning">
-                ⚡ <b>Berat Özer Kuralları:</b> Telefon numarası ve E-Posta doğrulama zorunluluğu tamamen rafa kaldırılmıştır! Direkt giriş yapabilirsin.
+                ⚡ <b>BEROSTYLE v7.0:</b> Canlı bulut ve oturum hafızası aktif edildi. Giriş yaptıktan sonra sistem seni hep hatırlayacak!
             </div>
 
             <div class="auth-tab-header">
@@ -942,7 +953,7 @@
             <button class="action-btn" onclick="AppController.finishRegistration()">Ağa Giriş Yap ve Başla 🚀</button>
         </div>
 
-        <!-- SCREEN 3.5: ONAY BEKLEME KİLİT EKRANI (EN KRİTİK YER) -->
+        <!-- SCREEN 3.5: ONAY BEKLEME KİLİT EKRANI -->
         <div id="screen-lock" class="screen hidden">
             <h1 class="app-title" style="font-size: 2.3rem; color: var(--neon-yellow);">⏳ ONAY BEKLENİYOR</h1>
             <div class="pp-upload-circle pp-display-style" id="lock-avatar-box" style="margin: 20px auto; border-color: var(--neon-yellow);">
@@ -961,10 +972,10 @@
         <!-- SCREEN 4: MAIN DASHBOARD -->
         <div id="app-screen" class="screen hidden">
             <div class="app-header">
-                <h2>BEROSTYLE</h2>
-                <div class="header-status-badge">
+                <h2>BEROSTYLE <span style="font-size:0.7rem; color:var(--text-muted);">v7.0</span></h2>
+                <div class="header-status-badge" id="cloud-status-badge">
                     <div class="header-status-dot"></div>
-                    <span>CANLI BULUT</span>
+                    <span id="cloud-status-text">BAĞLANILIYOR...</span>
                 </div>
             </div>
 
@@ -991,7 +1002,7 @@
                     <div class="user-list" id="active-users-dom"></div>
                 </div>
 
-                <!-- TAB 3: PROFILE & STRICTLY ISOLATED FOUNDER PANEL -->
+                <!-- TAB 3: PROFILE & FOUNDER PANEL -->
                 <div id="tab-profile" class="tab-content">
                     <div class="profile-header-card">
                         <div class="profile-avatar-wrapper pp-display-style" id="profile-avatar-box">
@@ -1112,11 +1123,10 @@
     <script>
         /**
          * ============================================================================
-         * BEROSTYLE CORE ENGINE (v6.0 TRUE CLOUD TITAN - ZERO LOCALSTORAGE LEAKS)
-         * - ALL LocalStorage Fallbacks Removed: 100% Firebase Realtime Database
-         * - Strict Approval Lock: Unapproved users are stuck in #screen-lock
-         * - Isolation of Founder Panel: Only 'beratozer' can ever see or execute admin actions
-         * - Live Follow / Unfollow Engine synced across Firebase instantly
+         * BEROSTYLE CORE ENGINE (v7.0 TRUE CLOUD TITAN - PERSISTENT SESSION)
+         * - Session Memory Restored: Logs in automatically without typing passwords again!
+         * - Google Radar (.info/connected): Real-time visual indicator of cloud connection.
+         * - Millisecond Cross-Device Sync: Phone registrations pop up on PC instantly.
          * ============================================================================
          */
 
@@ -1139,15 +1149,15 @@
             }
         };
 
-        /* --- FIREBASE BULUT VERİTABANI MOTORU (SIFIR YEREL HAFIZA) --- */
+        /* --- FIREBASE BULUT VERİTABANI MOTORU --- */
         const CloudEngine = {
             dbRef: null,
             usersCache: {},
             storiesCache: {},
             messagesCache: {},
+            isConnected: false,
 
             init: function() {
-                // Senin verdiğin birebir kimlik bilgileri (CDN uyumlu köprü)
                 const firebaseConfig = {
                     apiKey: "AIzaSyCtZ7M7Fxa9PQlNs_vzJmBvHI4ig-_jQ78",
                     authDomain: "berostyle-be218.firebaseapp.com",
@@ -1160,12 +1170,28 @@
                 };
                 firebase.initializeApp(firebaseConfig);
                 this.dbRef = firebase.database();
-                console.log("🔥 BEROSTYLE BULUT VERİTABANINA BAĞLANDI (LOCAL HAFIZA İPTAL)!");
+                console.log("🔥 BEROSTYLE v7.0 BULUT VERİTABANINA BAĞLANDI!");
                 
                 this.startRealtimeListeners();
             },
 
             startRealtimeListeners: function() {
+                // GOOGLE CANLI RADAR (.info/connected) - İNTERNET VEYA BULUT BAĞLANTISINI DENETLER
+                this.dbRef.ref('.info/connected').on('value', (snap) => {
+                    this.isConnected = snap.val() === true;
+                    const badge = document.getElementById('cloud-status-badge');
+                    const text = document.getElementById('cloud-status-text');
+                    if (this.isConnected) {
+                        badge.classList.remove('offline');
+                        text.innerText = "CANLI BULUT";
+                        console.log("🟢 Google Firebase Bağlantısı Başarılı!");
+                    } else {
+                        badge.classList.add('offline');
+                        text.innerText = "BAĞLANTI KOPUK";
+                        console.log("🔴 Google Firebase Bağlantısı Aranıyor...");
+                    }
+                });
+
                 // 1. Kullanıcıları Canlı Dinle
                 this.dbRef.ref('users').on('value', (snap) => {
                     const data = snap.val() || {};
@@ -1178,11 +1204,10 @@
                         this.usersCache['beratozer'] = adminObj;
                     }
 
-                    // Eğer giriş yapmış biri varsa ve bulutta durumu değiştiyse (örn: onaylandıysa)
+                    // Eğer giriş yapmış biri varsa ve bulutta durumu değiştiyse (örn: telefondaki üye onaylandıysa)
                     if(AppController.currentUser) {
                         const myLiveProfile = this.usersCache[AppController.currentUser.username];
                         if(!myLiveProfile) {
-                            // Hesabı kurucu silmiş/banlamış!
                             AppController.logout();
                             return;
                         }
@@ -1256,6 +1281,30 @@
 
             init: function() {
                 CloudEngine.init();
+                
+                // OTURUM HAFIZASI (BENİ HATIRLA) KONTROLÜ
+                const savedSession = localStorage.getItem('berostyle_v7_session');
+                if (savedSession) {
+                    try {
+                        const sessionObj = JSON.parse(savedSession);
+                        // Bulutun verileri yüklemesi için kısa bir bekleme
+                        setTimeout(() => {
+                            const cloudProfile = CloudEngine.usersCache[sessionObj.username];
+                            if (cloudProfile && cloudProfile.password === sessionObj.password) {
+                                this.currentUser = cloudProfile;
+                                this.applyTheme(this.currentUser.gender || 'male');
+                                Toast.show("Oturum hafızasından giriş yapıldı! 🚀", "success");
+                                this.handleStatusRedirect('screen-auth');
+                                return;
+                            } else if (sessionObj.username === 'beratozer' && sessionObj.password === 'babanız') {
+                                this.executeLogin('beratozer', 'babanız');
+                                return;
+                            }
+                        }, 600);
+                    } catch(e) {
+                        localStorage.removeItem('berostyle_v7_session');
+                    }
+                }
                 this.switchAuthTab('login');
             },
 
@@ -1317,20 +1366,26 @@
                     admin.status = 'onaylı'; admin.isAdmin = true;
                     this.currentUser = admin;
                     this.applyTheme(this.currentUser.gender || 'male');
+                    
+                    // OTURUMU KAYDET (BENİ HATIRLA)
+                    localStorage.setItem('berostyle_v7_session', JSON.stringify({ username: un, password: pw }));
+                    
                     Toast.show("Kurucu (beratozer) olarak giriş yapıldı! ⚡", "success");
                     this.switchScreen('screen-auth', 'app-screen');
                     this.launchApp();
                     return;
                 }
 
-                // Normal Üye Sorgusu (DOĞRUDAN BULUTTAN)
+                // Normal Üye Sorgusu
                 const uObj = CloudEngine.usersCache[un];
                 if (uObj && uObj.password === pw) {
                     this.currentUser = uObj;
                     this.applyTheme(this.currentUser.gender || 'male');
-                    Toast.show("Bulut doğrulaması başarılı! 🚀", "success");
                     
-                    // DURUM KONTROLÜ: ONAYLIMI YOKSA BEKLİYOR MU?
+                    // OTURUMU KAYDET (BENİ HATIRLA)
+                    localStorage.setItem('berostyle_v7_session', JSON.stringify({ username: un, password: pw }));
+                    
+                    Toast.show("Bulut doğrulaması başarılı! 🚀", "success");
                     this.handleStatusRedirect();
                 } else {
                     Toast.show("Kullanıcı adı veya şifre hatalı! (Bulutta bulunamadı)", "error");
@@ -1379,21 +1434,20 @@
                 
                 // BULUTA YAZ
                 CloudEngine.saveUser(this.currentUser);
-                Toast.show("Kayıt buluta basıldı!", "success");
                 
-                // ONAY KONTROLÜNE GÖNDER (DİREKT AKIŞA GİRMEK YOK!)
+                // OTURUMU KAYDET (BENİ HATIRLA)
+                localStorage.setItem('berostyle_v7_session', JSON.stringify({ username: this.currentUser.username, password: this.currentUser.password }));
+                
+                Toast.show("Kayıt buluta basıldı!", "success");
                 this.handleStatusRedirect('screen-pp');
             },
 
-            // ONAY VE KİLİT EKRANI YÖNETİCİSİ
             handleStatusRedirect: function(fromScreen = 'screen-auth') {
                 if (this.currentUser.username === 'beratozer' || this.currentUser.isAdmin || this.currentUser.status === 'onaylı') {
-                    // Onaylıysa ana ekrana al
                     document.getElementById('screen-lock').classList.add('hidden');
                     this.switchScreen(fromScreen, 'app-screen');
                     this.launchApp();
                 } else {
-                    // Onaylı değilse KİLİT EKRANINA HAPSET!
                     document.getElementById('lock-username-display').innerText = this.currentUser.username;
                     const lBox = document.getElementById('lock-avatar-box');
                     const lImg = document.getElementById('lock-avatar-img');
@@ -1433,13 +1487,12 @@
                 const statusEl = document.getElementById('profile-status-display');
                 const adminSec = document.getElementById('admin-section');
 
-                // KURUCU PANELİ İZOLASYONU: SADECE BERATOZER GÖREBİLİR!
                 if (this.currentUser.username === 'beratozer' || this.currentUser.isAdmin) {
                     statusEl.innerText = "Durum: KURUCU (ADMİN)"; statusEl.className = "profile-status-label approved";
                     adminSec.classList.remove('hidden');
                 } else {
                     statusEl.innerText = "Durum: ONAYLI ÜYE"; statusEl.className = "profile-status-label approved";
-                    adminSec.classList.add('hidden'); // DİĞER HERKESE GİZLİ
+                    adminSec.classList.add('hidden');
                 }
                 this.refreshUI();
             },
@@ -1490,7 +1543,6 @@
                             `;
                             activeDom.appendChild(item);
 
-                            // Sadece beratozer'in ekranında SİL butonu çıkar
                             if(this.currentUser.username === 'beratozer' || this.currentUser.isAdmin) {
                                 const adminItem = document.createElement('div'); adminItem.className = 'user-item';
                                 adminItem.innerHTML = `
@@ -1507,7 +1559,6 @@
                         }
                     } else if (u.status === 'bekliyor') {
                         pendingCount++;
-                        // Bekleyenler listesi SADECE BERATOZER EKRANINA ÇİZİLİR
                         if(this.currentUser && (this.currentUser.username === 'beratozer' || this.currentUser.isAdmin)) {
                             const item = document.createElement('div'); item.className = 'user-item';
                             item.innerHTML = `
@@ -1556,7 +1607,6 @@
                 });
             },
 
-            // GERÇEK ZAMANLI TAKİP SİSTEMİ (ANLIK BULUT SENKRONU)
             openProfileModal: function(un, ppUrl) {
                 const u = CloudEngine.usersCache[un];
                 if (!u) return;
@@ -1618,7 +1668,6 @@
                     Toast.show(`${targetUn} takip ediliyor! Karşıya bildirildi 🌟`, "success");
                 }
 
-                // ANINDA BULUTA YAZ Kİ KARŞI TARAFIN SAYISI DA CANLI ARTSIN
                 CloudEngine.saveUser(targetUser);
                 CloudEngine.saveUser(this.currentUser);
                 
@@ -1778,6 +1827,7 @@
             },
 
             logout: function() {
+                localStorage.removeItem('berostyle_v7_session');
                 this.currentUser = null;
                 Toast.show("Oturum kapatıldı.", "normal");
                 setTimeout(() => location.reload(), 500);
