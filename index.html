@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>BEROSTYLE v9.0 TITAN - Özel Arkadaş Grubu Ağı</title>
+    <title>BEROSTYLE - Özel Arkadaş Grubu Ağı</title>
     
     <!-- Firebase Compat SDKs (En Stabil Web Sürümü - v10.8.0) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -123,7 +123,6 @@
             transform: translate3d(0, 35px, 0) scale(0.95);
         }
 
-        /* YENİ EKLENEN GERİ DÖNME (ÇARPI) BUTONU TASARIMI */
         .close-screen-btn {
             position: absolute;
             top: 20px;
@@ -1048,11 +1047,11 @@
 
         <!-- SCREEN 2: AUTHENTICATION (LOGIN / REGISTER) -->
         <div id="screen-auth" class="screen hidden">
-            <!-- YENİ: GERİ DÖNME (ÇARPI) TUŞU -->
+            <!-- GERİ DÖNME (ÇARPI) TUŞU -->
             <button class="close-screen-btn" onclick="AppController.goBackToGender()" title="Geri Dön">✕</button>
 
             <div class="top-warning">
-                ⚡ <b>BEROSTYLE v9.0 TITAN:</b> Canlı bulut ve görsel sıkıştırma motoru aktif! Giriş yaptıktan sonra sistem seni hep hatırlayacak.
+                ⚡ <b>BEROSTYLE:</b> Canlı bulut ve görsel sıkıştırma motoru aktif! Giriş yaptıktan sonra sistem seni hep hatırlayacak.
             </div>
 
             <div class="auth-tab-header">
@@ -1104,7 +1103,7 @@
         <!-- SCREEN 4: MAIN DASHBOARD -->
         <div id="app-screen" class="screen hidden">
             <div class="app-header">
-                <h2>BEROSTYLE <span style="font-size:0.7rem; color:var(--text-muted);">v9.0</span></h2>
+                <h2>BEROSTYLE <span style="font-size:0.7rem; color:var(--text-muted);">CANLI</span></h2>
                 <div class="header-status-badge" id="cloud-status-badge">
                     <div class="header-status-dot"></div>
                     <span id="cloud-status-text">BAĞLANILIYOR...</span>
@@ -1255,7 +1254,7 @@
     <script>
         /**
          * ============================================================================
-         * BEROSTYLE v9.0 TITAN ENTERPRISE CORE ENGINE
+         * BEROSTYLE ENTERPRISE CORE ENGINE
          * - HTML5 Canvas Image Compression Engine (SOLVES 10MB PHOTO CRASH / BUTTON UNRESPONSIVENESS)
          * - Zero-Lag Button States with Visual Feedback & Error Catching
          * - True 0-Follower Starting Architecture with Live +1/-1 Cloud Sync
@@ -1326,7 +1325,6 @@
                         const ctx = canvas.getContext("2d");
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        // Compress to JPEG Base64
                         const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
                         console.log(`📉 Sıkıştırma Başarılı: Orijinal Boyut ~${Math.round(file.size/1024)}KB -> Sıkıştırılmış ~${Math.round(compressedDataUrl.length/1024)}KB`);
                         callback(compressedDataUrl);
@@ -1356,13 +1354,12 @@
                 };
                 firebase.initializeApp(firebaseConfig);
                 this.dbRef = firebase.database();
-                console.log("🔥 BEROSTYLE v9.0 TITAN BULUT VERİTABANINA BAĞLANDI!");
+                console.log("🔥 BEROSTYLE BULUT VERİTABANINA BAĞLANDI!");
                 
                 this.startRealtimeListeners();
             },
 
             startRealtimeListeners: function() {
-                // GOOGLE CANLI RADAR (.info/connected)
                 this.dbRef.ref('.info/connected').on('value', (snap) => {
                     this.isConnected = snap.val() === true;
                     const badge = document.getElementById('cloud-status-badge');
@@ -1376,12 +1373,10 @@
                     }
                 });
 
-                // 1. Kullanıcıları Canlı Dinle
                 this.dbRef.ref('users').on('value', (snap) => {
                     const data = snap.val() || {};
                     this.usersCache = data;
                     
-                    // Kurucuyu garantiye al
                     if (!this.usersCache['beratozer']) {
                         const adminObj = { 
                             username: "beratozer", password: "babanız", gender: "male", ppUrl: "", 
@@ -1391,7 +1386,6 @@
                         this.usersCache['beratozer'] = adminObj;
                     }
 
-                    // Giriş yapmış kullanıcının canlı senkronizasyonu
                     if (AppController.currentUser) {
                         const myLiveProfile = this.usersCache[AppController.currentUser.username];
                         if (!myLiveProfile) {
@@ -1404,7 +1398,6 @@
                     }
                 });
 
-                // 2. Hikayeleri Canlı Dinle
                 this.dbRef.ref('stories').on('value', (snap) => {
                     this.storiesCache = snap.val() || {};
                     if (AppController.currentUser && AppController.currentUser.status === 'onaylı') {
@@ -1412,7 +1405,6 @@
                     }
                 });
 
-                // 3. Mesajları Canlı Dinle
                 this.dbRef.ref('messages').on('value', (snap) => {
                     this.messagesCache = snap.val() || {};
                     if (AppController.activeChatTarget) AppController.renderMessages();
@@ -1473,8 +1465,7 @@
             init: function() {
                 CloudEngine.init();
                 
-                // OTURUM HAFIZASI (BENİ HATIRLA)
-                const savedSession = localStorage.getItem('berostyle_v9_session');
+                const savedSession = localStorage.getItem('berostyle_session');
                 if (savedSession) {
                     try {
                         const sessionObj = JSON.parse(savedSession);
@@ -1492,7 +1483,7 @@
                             }
                         }, 600);
                     } catch(e) {
-                        localStorage.removeItem('berostyle_v9_session');
+                        localStorage.removeItem('berostyle_session');
                     }
                 }
                 this.switchAuthTab('login');
@@ -1523,7 +1514,6 @@
                 this.switchScreen('screen-gender', 'screen-auth');
             },
 
-            // YENİ EKLENEN GERİ DÖNME FONKSİYONU
             goBackToGender: function() {
                 this.switchScreen('screen-auth', 'screen-gender');
             },
@@ -1577,7 +1567,7 @@
                     admin.status = 'onaylı'; admin.isAdmin = true;
                     this.currentUser = admin;
                     this.applyTheme(this.currentUser.gender || 'male');
-                    localStorage.setItem('berostyle_v9_session', JSON.stringify({ username: un, password: pw }));
+                    localStorage.setItem('berostyle_session', JSON.stringify({ username: un, password: pw }));
                     Toast.show("Kurucu (beratozer) olarak giriş yapıldı! ⚡", "success");
                     this.switchScreen('screen-auth', 'app-screen');
                     this.launchApp();
@@ -1588,7 +1578,7 @@
                 if (uObj && uObj.password === pw) {
                     this.currentUser = uObj;
                     this.applyTheme(this.currentUser.gender || 'male');
-                    localStorage.setItem('berostyle_v9_session', JSON.stringify({ username: un, password: pw }));
+                    localStorage.setItem('berostyle_session', JSON.stringify({ username: un, password: pw }));
                     Toast.show("Bulut doğrulaması başarılı! 🚀", "success");
                     this.handleStatusRedirect();
                 } else {
@@ -1623,7 +1613,6 @@
                 const f = event.target.files[0];
                 if (f) {
                     Toast.show("Fotoğraf işleniyor ve küçültülüyor... ⏳", "normal");
-                    // 400x400 max boyut, %75 JPEG kalitesi -> ~30 KB ultra hafif veritabanı yükü!
                     ImageCompressor.compress(f, 400, 400, 0.75, (compressedDataUrl) => {
                         this.tempPPData = compressedDataUrl;
                         document.getElementById('pp-preview-img').src = this.tempPPData;
@@ -1634,15 +1623,13 @@
                 }
             },
 
-            // BUTON KİLİTLENMESİNİ VE ÇÖKMEYİ ENGELLEYEN ANLIK GEÇİŞ ENGINE (TAMamen DÜZELTİLDİ)
             finishRegistration: function() {
                 if (this.tempPPData) this.tempRegUser.ppUrl = this.tempPPData;
                 this.currentUser = this.tempRegUser;
                 this.applyTheme(this.currentUser.gender || 'male');
                 
-                // Arka planda Firebase'e güvenle yaz ama kullanıcıyı hiç bekletme, direkt içeri al
                 CloudEngine.saveUser(this.currentUser);
-                localStorage.setItem('berostyle_v9_session', JSON.stringify({ username: this.currentUser.username, password: this.currentUser.password }));
+                localStorage.setItem('berostyle_session', JSON.stringify({ username: this.currentUser.username, password: this.currentUser.password }));
                 
                 Toast.show("Kayıt buluta başarıyla basıldı! 🎉", "success");
                 this.handleStatusRedirect('screen-pp');
@@ -1815,7 +1802,6 @@
                 });
             },
 
-            // GERÇEK 0'DAN BAŞLAYAN TAKİP / TAKİPÇİ SİSTEMİ (+1 / -1 BULUT ESASLI)
             openProfileModal: function(un, ppUrl) {
                 const u = CloudEngine.usersCache[un];
                 if (!u) return;
@@ -1887,7 +1873,6 @@
                 document.getElementById('profile-inspect-modal').style.display = 'none';
             },
 
-            // HİKAYE YÜKLEMEDE 1080x1920 CANVAS SIKIŞTIRMASI İLE SIFIR HATA GARANTİSİ
             handleStoryUpload: function(event) {
                 const f = event.target.files[0];
                 if (f) {
@@ -1896,7 +1881,6 @@
                     btn.innerHTML = "<span>HİKAYE SIKIŞTIRILIYOR... ⏳</span>";
                     Toast.show("Hikaye fotoğrafı buluta göre optimize ediliyor...", "normal");
 
-                    // 800x1400 max boyut, %75 JPEG kalitesi -> ~100 KB veritabanı yükü!
                     ImageCompressor.compress(f, 800, 1400, 0.75, (compressedDataUrl) => {
                         const stObj = { 
                             username: this.currentUser.username, 
@@ -1930,7 +1914,6 @@
 
                 for (let un in stories) {
                     if (un === this.currentUser.username) continue;
-                    // 24 Saat (86400000 ms) kontrolü
                     if (Date.now() - stories[un].timestamp > 86400000) { CloudEngine.deleteStory(un); continue; }
                     const st = stories[un]; const slot = document.createElement('div'); slot.className = 'story-slot';
                     let av = st.avatar ? `<img src="${st.avatar}" class="story-img">` : `<div class="story-img pp-display-style"></div>`;
@@ -2051,7 +2034,7 @@
             },
 
             logout: function() {
-                localStorage.removeItem('berostyle_v9_session');
+                localStorage.removeItem('berostyle_session');
                 this.currentUser = null;
                 Toast.show("Oturum güvenle kapatıldı.", "normal");
                 setTimeout(() => location.reload(), 400);
