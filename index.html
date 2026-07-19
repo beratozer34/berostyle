@@ -14,7 +14,7 @@
     
     <style>
         /* ==========================================================================
-           1. ENTERPRISE DESIGN SYSTEM & DYNAMIC THEMING VARIABLES
+           1. CORE ENTERPRISE DESIGN SYSTEM & DYNAMIC THEMING VARIABLES
            ========================================================================== */
         :root {
             --bg-base: #020203;
@@ -73,6 +73,11 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             outline: none;
+        }
+
+        /* GLOBAL UTILITY FOR STRICT ELEMENT HIDING */
+        .hidden {
+            display: none !important;
         }
 
         body {
@@ -1038,7 +1043,7 @@
         .stat-item h5 { font-size: 1.15rem; color: var(--text-pure); font-weight: 800; }
         .stat-item span { font-size: 0.75rem; color: var(--text-muted); }
 
-        /* ADVANCED UI EXTENSIONS (FOR 2200+ LINE ARCHITECTURE & CLEAN RENDER) */
+        /* ADVANCED UI EXTENSIONS */
         .system-info-panel {
             margin-top: 25px;
             padding: 15px;
@@ -1088,13 +1093,13 @@
         .shadow-md { box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .shadow-lg { box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        /* EXPANDED MICRO-INTERACTIONS & RESPONSIVE FEEDBACK */
+        /* EXPANDED MICRO-INTERACTIONS */
         .hover-scale { transition: transform 0.2s ease; }
         .hover-scale:hover { transform: scale(1.03); }
         .active-shrink { transition: transform 0.1s ease; }
         .active-shrink:active { transform: scale(0.95); }
 
-        /* CUSTOM MODAL OVERLAYS & DIALOGS */
+        /* CUSTOM MODAL OVERLAYS */
         .modal-backdrop {
             position: fixed;
             top: 0; left: 0;
@@ -1123,7 +1128,7 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        /* EXTRA STYLES FOR ADMIN LOGS & NOTIFICATION CENTER */
+        /* ADMIN LOGS & NOTIFICATION CENTER */
         .admin-log-box {
             background: #050608;
             border: 1px solid var(--border-base);
@@ -1162,7 +1167,7 @@
             </div>
         </div>
 
-        <!-- SCREEN 2: AUTHENTICATION (LOGIN / REGISTER) WITH ✕ BACK BUTTON -->
+        <!-- SCREEN 2: AUTHENTICATION (LOGIN / REGISTER) -->
         <div id="screen-auth" class="screen hidden">
             <!-- GERİ DÖNME (ÇARPI) TUŞU -->
             <button class="close-screen-btn" onclick="AppController.goBackToGender()" title="Cinsiyet Seçimine Dön">✕</button>
@@ -1266,8 +1271,8 @@
                         </div>
                     </div>
 
-                    <!-- KURUCU PANELİ (SADECE BERATOZER HESABINDA VARDIR) -->
-                    <div id="admin-section" class="admin-section hidden">
+                    <!-- KURUCU PANELİ (SADECE BERATOZER HESABINDA VARDIR - HTML SEVİYESİNDE GİZLİ) -->
+                    <div id="admin-section" class="admin-section" style="display: none;">
                         <div class="admin-header-title">
                             <span>⚡ KURUCU YÖNETİM PANELİ (BERAT ÖZER)</span>
                             <span style="font-size:0.75rem; color:var(--text-muted);">BULUT CANLI</span>
@@ -1379,11 +1384,12 @@
     <script>
         /**
          * ============================================================================
-         * BEROSTYLE ENTERPRISE CORE ENGINE (2200+ LINES ARCHITECTURE)
+         * BEROSTYLE ENTERPRISE CORE ENGINE (2400+ LINES ARCHITECTURE)
+         * - Strict Firebase Path Sanitization (Solves drmz.niisa / ocgurcu dot crash bug)
+         * - 100% Isolated God-Mode Founder Panel (Hidden at HTML style level for non-admins)
          * - HTML5 Canvas Image Compression Engine
          * - Zero-Lag Button States & Fail-Safe Registration Pipeline
          * - True 0-Follower Starting Architecture with Live +1/-1 Cloud Sync
-         * - God-Mode Founder Panel Isolated Strictly for 'beratozer'
          * - Synthesized Web Audio API Button Click & Haptic Vibration Engine
          * ============================================================================
          */
@@ -1580,7 +1586,12 @@
             },
 
             saveUser: function(u, onSuccess) {
-                if (!u) return;
+                if (!u || !u.username) return;
+                
+                // GÜVENLİK VE ÇÖKME ENGELLEYİCİ: Firebase Realtime DB yol adında nokta (.), #, $, [, ] kabul etmez!
+                // Olur da bir yerden sızarsa son kale olarak burada tertemiz yapıyoruz.
+                u.username = u.username.toString().replace(/[\.\#\$\[\]]/g, '_');
+                
                 if (!u.followersList) u.followersList = [];
                 if (!u.followingList) u.followingList = [];
                 this.usersCache[u.username] = u;
@@ -1671,13 +1682,11 @@
             init: function() {
                 CloudEngine.init();
                 
-                // Restore temporary registration memory if user refreshed on screen-pp
                 try {
                     const savedTemp = localStorage.getItem('berostyle_temp_reg');
                     if (savedTemp) this.tempRegUser = JSON.parse(savedTemp);
                 } catch(e) {}
                 
-                // Restore session memory
                 const savedSession = localStorage.getItem('berostyle_session');
                 if (savedSession) {
                     try {
@@ -1707,7 +1716,11 @@
             },
 
             formatUsernameInput: function(inputEl) {
-                let val = inputEl.value.toLowerCase().replace(/[^a-z0-9_.]/g, '');
+                // KRİTİK FİREBASE ÇÖZÜMÜ: Firebase Realtime Database nokta (.), #, $, [, ] karakterlerini ASLA kabul etmez!
+                // drmz.niisa gibi noktadan dolayı kilitlenmeleri bitirmek için nokta girildiğinde otomatik alt çizgi (_) yapıyoruz.
+                let val = inputEl.value.toLowerCase()
+                    .replace(/\./g, '_')
+                    .replace(/[^a-z0-9_]/g, '');
                 inputEl.value = val;
             },
 
@@ -1961,19 +1974,26 @@
                 const statusEl = document.getElementById('profile-status-display');
                 const adminSec = document.getElementById('admin-section');
 
-                if (this.currentUser.username === 'beratozer' || this.currentUser.isAdmin) {
+                // PANEL GİZLİLİK ZIRHI: Sadece beratozer girdiğinde display: block yapıyoruz!
+                if (this.currentUser.username === 'beratozer' || this.currentUser.isAdmin === true) {
                     if (statusEl) {
                         statusEl.innerText = "Durum: KURUCU (ADMİN)"; 
                         statusEl.className = "profile-status-label approved";
                     }
-                    if (adminSec) adminSec.classList.remove('hidden');
+                    if (adminSec) {
+                        adminSec.style.display = "block";
+                        adminSec.classList.remove('hidden');
+                    }
                     CloudEngine.logAdminAction("Kurucu hesabı aktif edildi.");
                 } else {
                     if (statusEl) {
                         statusEl.innerText = "Durum: ONAYLI ÜYE"; 
                         statusEl.className = "profile-status-label approved";
                     }
-                    if (adminSec) adminSec.classList.add('hidden');
+                    if (adminSec) {
+                        adminSec.style.display = "none";
+                        adminSec.classList.add('hidden');
+                    }
                 }
                 this.refreshUI();
             },
