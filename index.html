@@ -1254,7 +1254,8 @@ x<!DOCTYPE html>
 
         <!-- HIDDEN FILE INPUTS -->
         <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="AppController.handlePhotoSelected(event)">
-        <input type="file" id="story-file-input" accept="image/*" style="display: none;" onchange="AppController.handleStoryUpload(event)">
+       <input type="file" id="story-file-input" accept="image/*" style="display: none;" onchange="AppController.handleStoryUpload(event)">
+<input type="file" id="post-file-input" accept="image/*" style="display: none;" onchange="AppController.handlePostUpload(event)">
 
         <!-- SCREEN 1: GENDER SELECTION -->
         <div id="screen-gender" class="screen">
@@ -1306,16 +1307,16 @@ x<!DOCTYPE html>
         </div>
 
         <!-- SCREEN 3.5: ONAY BEKLEME KİLİT EKRANI -->
-        <div id="screen-lock" class="screen hidden">
-            <h1 class="app-title" style="font-size: 2.3rem; color: var(--neon-yellow);">⏳ ONAY BEKLENİYOR</h1>
+       <div id="screen-lock" class="screen hidden">
+            <h1 id="lock-title" class="app-title" style="font-size: 2.3rem; color: var(--neon-yellow);">⏳ ONAY BEKLENİYOR</h1>
             <div class="pp-upload-circle pp-display-style" id="lock-avatar-box" style="margin: 20px auto; border-color: var(--neon-yellow);">
                 <img id="lock-avatar-img" style="display:none; width:100%; height:100%; object-fit:cover;" alt="PP">
             </div>
             <h3 id="lock-username-display" style="color: var(--text-pure); font-size: 1.5rem; margin-bottom: 12px;">kullanici</h3>
-            <p class="welcome-msg" style="color: var(--neon-yellow); font-weight: 800;">
+            <p id="lock-message-main" class="welcome-msg" style="color: var(--neon-yellow); font-weight: 800;">
                 Hesabın buluta kaydedildi! Ancak kurucu <b>(beratozer)</b> tarafından onaylanmadığın için ağ akışına giremezsin.
             </p>
-            <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-bottom: 30px;">
+            <p id="lock-message-sub" style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-bottom: 30px;">
                 Kurucu seni onayladığı an bu ekran otomatik olarak açılacaktır. Lütfen bekle...
             </p>
             <button class="logout-btn" onclick="AppController.logout()">Oturumu Kapat / Giriş Ekranına Dön</button>
@@ -1368,7 +1369,7 @@ x<!DOCTYPE html>
                             </div>
                             
                             <div class="profile-stats-container">
-                                <div class="profile-stat-box" onclick="AppController.showMyStories()">
+                              <div class="profile-stat-box" onclick="AppController.showMyPosts()">
                                     <span class="profile-stat-num" id="my-post-count">0</span>
                                     <span class="profile-stat-label">Gönderi</span>
                                 </div>
@@ -1388,6 +1389,7 @@ x<!DOCTYPE html>
                             <div class="profile-status-label" id="profile-status-display">Durum: Bekliyor</div>
                             <div class="profile-bio-text" id="my-bio-display">Henüz bir biyografi eklenmedi...</div>
                             <button class="bio-edit-btn" onclick="AppController.openBioModal()">✍️ Biyografini Düzenle</button>
+<button class="bio-edit-btn" style="margin-top:6px;" onclick="AppController.triggerFileSelect('post')">📸 Gönderi Paylaş</button>
                         </div>
                     </div>
 
@@ -1492,8 +1494,7 @@ x<!DOCTYPE html>
                 </div>
                 
                 <div class="stats-row">
-                    <div class="stat-item"><h5 id="inspect-posts">0</h5><span>Gönderi</span></div>
-                    <div class="stat-item"><h5 id="inspect-followers">0</h5><span>Takipçi</span></div>
+<div class="stat-item"><h5 id="inspect-posts">0</h5><span>Hikaye</span></div>                    <div class="stat-item"><h5 id="inspect-followers">0</h5><span>Takipçi</span></div>
                     <div class="stat-item"><h5 id="inspect-following">0</h5><span>Takip</span></div>
                 </div>
 
@@ -1501,6 +1502,23 @@ x<!DOCTYPE html>
                     <button class="action-btn" id="inspect-follow-btn" style="margin-top:0; padding:12px;" onclick="AppController.toggleFollowUser(AppController.inspectingUser)">Takip Et 🌟</button>
                     <button class="dm-action-btn" style="flex:1; border-radius:16px; font-size:1rem;" onclick="AppController.closeProfileModal(); AppController.openChatRoom(AppController.inspectingUser, AppController.inspectingPp)">Mesaj</button>
                 </div>
+            </div>
+        </div>
+<!-- OVERLAY 6: GÖNDERİLER (KALICI POSTLAR) -->
+        <div id="posts-modal" class="profile-modal">
+            <div class="profile-modal-card" style="max-height:75vh; overflow-y:auto;">
+                <span class="profile-modal-close" onclick="AppController.closePostsModal()">&times;</span>
+                <h3 style="color:var(--text-pure); font-size:1.2rem; margin-bottom:16px; text-align:center;">Gönderiler</h3>
+                <div id="posts-grid-dom" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;"></div>
+            </div>
+        </div>
+<!-- OVERLAY 4: BIO DÜZENLEME MODALI -->
+<!-- OVERLAY 5: TAKİPÇİ / TAKİP LİSTESİ -->
+        <div id="userlist-modal" class="profile-modal">
+            <div class="profile-modal-card" style="max-height:75vh; overflow-y:auto; text-align:left;">
+                <span class="profile-modal-close" onclick="AppController.closeUserListModal()">&times;</span>
+                <h3 id="userlist-title" style="color:var(--text-pure); font-size:1.2rem; margin-bottom:16px; text-align:center;">Takipçiler</h3>
+                <div class="user-list" id="userlist-dom"></div>
             </div>
         </div>
 
@@ -1641,10 +1659,11 @@ x<!DOCTYPE html>
         };
 
         /* --- 4. FIREBASE REALTIME CLOUD DATABASE ENGINE --- */
-        const CloudEngine = {
+      const CloudEngine = {
             dbRef: null,
             usersCache: {},
             storiesCache: {},
+            postsCache: {},
             messagesCache: {},
             isConnected: false,
 
@@ -1719,10 +1738,17 @@ x<!DOCTYPE html>
                     }
                 });
 
-                this.dbRef.ref('stories').on('value', (snap) => {
+               this.dbRef.ref('stories').on('value', (snap) => {
                     this.storiesCache = snap.val() || {};
                     if (AppController.currentUser && AppController.currentUser.status === 'onaylı') {
                         AppController.renderStories();
+                        AppController.updateMyStats();
+                    }
+                });
+
+              this.dbRef.ref('posts').on('value', (snap) => {
+                    this.postsCache = snap.val() || {};
+                    if (AppController.currentUser && AppController.currentUser.status === 'onaylı') {
                         AppController.updateMyStats();
                     }
                 });
@@ -1733,7 +1759,6 @@ x<!DOCTYPE html>
                     if (AppController.currentUser && AppController.currentUser.status === 'onaylı') AppController.renderUserLists();
                 });
             },
-
             saveUser: function(u, onSuccess) {
                 if (!u || !u.username) return;
                 
@@ -1778,6 +1803,18 @@ x<!DOCTYPE html>
             },
 
             getMessages: function(roomId) {
+savePost: function(username, postObj, onSuccess) {
+                if (!this.dbRef) return;
+                const postId = 'post_' + Date.now() + Math.random().toString(36).substr(2, 4);
+                this.dbRef.ref('posts/' + username + '/' + postId).set(postObj)
+                    .then(() => { if (onSuccess) onSuccess(); })
+                    .catch((err) => { Toast.show("Gönderi yüklenirken bulut hatası oluştu!", "error"); });
+            },
+
+            deletePost: function(username, postId) {
+                if (!this.dbRef) return;
+                this.dbRef.ref('posts/' + username + '/' + postId).remove();
+            },
                 const roomObj = this.messagesCache[roomId] || {};
                 return Object.values(roomObj);
             },
@@ -1830,33 +1867,23 @@ x<!DOCTYPE html>
             init: function() {
                 CloudEngine.init();
                 
-                try {
-                    const savedTemp = localStorage.getItem('berostyle_temp_reg');
+               try {
+                    const savedTemp = sessionStorage.getItem('berostyle_temp_reg');
                     if (savedTemp) this.tempRegUser = JSON.parse(savedTemp);
                 } catch(e) {}
                 
-                const savedSession = localStorage.getItem('berostyle_session');
+             const savedSession = sessionStorage.getItem('berostyle_session');
                 if (savedSession) {
                     try {
                         const sessionObj = JSON.parse(savedSession);
                         setTimeout(() => {
-                            const cloudProfile = CloudEngine.usersCache[sessionObj.username];
-                            if (cloudProfile && cloudProfile.password === sessionObj.password) {
-                                this.currentUser = cloudProfile;
-                                this.applyTheme(this.currentUser.gender || 'male');
-                                Toast.show("Oturum hafızasından canlı buluta bağlanıldı! 🚀", "success");
-                                this.handleStatusRedirect('screen-auth');
-                                return;
-                            } else if (sessionObj.username === 'beratozer' && sessionObj.password === 'babanız') {
-                                this.executeLogin('beratozer', 'babanız');
-                                return;
-                            }
+                            this.executeLogin(sessionObj.username, sessionObj.password);
                         }, 600);
                     } catch(e) {
-                        localStorage.removeItem('berostyle_session');
+                        sessionStorage.removeItem('berostyle_session');
                     }
                 }
-                this.switchAuthTab('login');
+               this.switchAuthTab('login');
             },
 
             applyTheme: function(gender) {
@@ -1935,55 +1962,58 @@ x<!DOCTYPE html>
             },
 
             executeLogin: function(un, pw) {
-                if (un === 'beratozer' && pw === 'babanız') {
-                    let admin = CloudEngine.usersCache['beratozer'] || { 
-                        username: "beratozer", password: "babanız", gender: "male", ppUrl: "", bio: "BEROSTYLE Kurucusu & Yazılım Geliştirici ⚡👑",
-                        status: "onaylı", isAdmin: true, followersList: [], followingList: [] 
-                    };
-                    admin.status = 'onaylı'; admin.isAdmin = true;
-                    if (!admin.bio) admin.bio = "BEROSTYLE Kurucusu & Yazılım Geliştirici ⚡👑";
-                    this.currentUser = admin;
-                    this.applyTheme(this.currentUser.gender || 'male');
-                    localStorage.setItem('berostyle_session', JSON.stringify({ username: un, password: pw }));
-                    Toast.show("Kurucu (beratozer) olarak giriş yapıldı! ⚡", "success");
-                    this.switchScreen('screen-auth', 'app-screen');
-                    this.launchApp();
-                    return;
-                }
-
-                const uObj = CloudEngine.usersCache[un];
-                if (uObj && uObj.password === pw) {
+                const fakeEmail = un + "@berostyle.app";
+                firebase.auth().signInWithEmailAndPassword(fakeEmail, pw).then((cred) => {
+                    let uObj = CloudEngine.usersCache[un];
+                    if (!uObj) {
+                        uObj = {
+                            username: un,
+                            authUid: cred.user.uid,
+                            gender: "male",
+                            ppUrl: "",
+                            bio: (un === 'beratozer') ? "BEROSTYLE Kurucusu & Yazılım Geliştirici ⚡👑" : "Ağdaki yeni yerimi aldım! ✨",
+                            status: (un === 'beratozer') ? 'onaylı' : 'bekliyor',
+                            isAdmin: (un === 'beratozer'),
+                            followersList: [], followingList: []
+                        };
+                    }
+                    if (!uObj.authUid) uObj.authUid = cred.user.uid;
                     this.currentUser = uObj;
                     this.applyTheme(this.currentUser.gender || 'male');
-                    localStorage.setItem('berostyle_session', JSON.stringify({ username: un, password: pw }));
-                    Toast.show("Bulut doğrulaması başarılı! 🚀", "success");
-                    this.handleStatusRedirect();
-                } else {
-                    Toast.show("Kullanıcı adı veya şifre hatalı! (Bulutta bulunamadı)", "error");
-                }
+sessionStorage.setItem('berostyle_session', JSON.stringify({ username: un, password: pw }));                    CloudEngine.saveUser(this.currentUser, () => {
+                        Toast.show("Bulut doğrulaması başarılı! 🚀", "success");
+                        this.handleStatusRedirect();
+                    });
+                }).catch((err) => {
+                    Toast.show("Kullanıcı adı veya şifre hatalı!", "error");
+                });
             },
 
             executeRegister: function(un, pw) {
                 if (CloudEngine.usersCache[un]) return Toast.show("Bu kullanıcı adı zaten bulutta kayıtlı!", "error");
-                this.tempRegUser = {
-                    username: un,
-                    password: pw,
-                    gender: this.tempGender || 'male',
-                    ppUrl: '',
-                    bio: 'Ağdaki yeni yerimi aldım! ✨',
-                    status: (un === 'beratozer') ? 'onaylı' : 'bekliyor',
-                    isAdmin: (un === 'beratozer'),
-                    followersList: [],
-                    followingList: []
-                };
-                try {
-                    localStorage.setItem('berostyle_temp_reg', JSON.stringify(this.tempRegUser));
-                } catch(e) {}
-                Toast.show("Harika! Şimdi profil resmini ayarlayalım.", "success");
-                this.switchScreen('screen-auth', 'screen-pp');
-            },
-
-            triggerFileSelect: function(target) {
+                const fakeEmail = un + "@berostyle.app";
+                firebase.auth().createUserWithEmailAndPassword(fakeEmail, pw).then((cred) => {
+                    this.tempRegUser = {
+                        username: un,
+                        authUid: cred.user.uid,
+                        _localPw: pw,
+                        gender: this.tempGender || 'male',
+                        ppUrl: '',
+                        bio: 'Ağdaki yeni yerimi aldım! ✨',
+                        status: (un === 'beratozer') ? 'onaylı' : 'bekliyor',
+                        isAdmin: (un === 'beratozer'),
+                        followersList: [],
+                        followingList: []
+                    };
+                   try {
+                        sessionStorage.setItem('berostyle_temp_reg', JSON.stringify(this.tempRegUser));
+                    } catch(e) {}
+                    Toast.show("Harika! Şimdi profil resmini ayarlayalım.", "success");
+                    this.switchScreen('screen-auth', 'screen-pp');
+                }).catch((err) => {
+                    Toast.show("Kayıt hatası: " + err.message, "error");
+                });
+            },           triggerFileSelect: function(target) {
                 HapticEngine.playClick(600, 0.04);
                 if (target === 'pp') {
                     document.getElementById('file-input').click();
@@ -1992,9 +2022,13 @@ x<!DOCTYPE html>
                         return Toast.show("Onaylanmadan hikaye atamazsın!", "error");
                     }
                     document.getElementById('story-file-input').click();
+                } else if (target === 'post') {
+                    if (this.currentUser.status !== 'onaylı' && !this.currentUser.isAdmin) {
+                        return Toast.show("Onaylanmadan gönderi atamazsın!", "error");
+                    }
+                    document.getElementById('post-file-input').click();
                 }
             },
-
             handlePhotoSelected: function(event) {
                 const f = event.target.files[0];
                 if (f) {
@@ -2018,7 +2052,7 @@ x<!DOCTYPE html>
                 
                 if (!this.tempRegUser) {
                     try {
-                        const savedTemp = localStorage.getItem('berostyle_temp_reg');
+                        const savedTemp = sessionStorage.getItem('berostyle_temp_reg');
                         if (savedTemp) this.tempRegUser = JSON.parse(savedTemp);
                     } catch(e) {}
                 }
@@ -2047,13 +2081,14 @@ x<!DOCTYPE html>
                 this.applyTheme(this.currentUser.gender || 'male');
                 
                 try {
-                    localStorage.setItem('berostyle_session', JSON.stringify({ 
+                    sessionStorage.setItem('berostyle_session', JSON.stringify({ 
                         username: this.currentUser.username, 
-                        password: this.currentUser.password 
+                        password: this.currentUser._localPw 
                     }));
-                    localStorage.removeItem('berostyle_temp_reg');
+                    sessionStorage.removeItem('berostyle_temp_reg');
                 } catch(e) {}
 
+                delete this.currentUser._localPw;
                 CloudEngine.saveUser(this.currentUser);
                 Toast.show("Kayıt buluta başarıyla basıldı! 🎉", "success");
                 this.handleStatusRedirect('screen-pp');
@@ -2070,6 +2105,20 @@ x<!DOCTYPE html>
                 } else {
                     const lName = document.getElementById('lock-username-display');
                     if (lName) lName.innerText = this.currentUser.username;
+
+                    const lTitle = document.getElementById('lock-title');
+                    const lMsgMain = document.getElementById('lock-message-main');
+                    const lMsgSub = document.getElementById('lock-message-sub');
+
+                    if (this.currentUser.status === 'reddedildi') {
+                        if (lTitle) { lTitle.innerText = '⛔ BAŞVURUN REDDEDİLDİ'; lTitle.style.color = 'var(--neon-red)'; }
+                        if (lMsgMain) { lMsgMain.innerHTML = 'Üzgünüz, kurucu <b>(beratozer)</b> başvurunu bu ağ için uygun görmedi ve isteğini reddetti.'; lMsgMain.style.color = 'var(--neon-red)'; }
+                        if (lMsgSub) { lMsgSub.innerText = 'Bir yanlışlık olduğunu düşünüyorsan kurucuyla doğrudan iletişime geçebilirsin.'; }
+                    } else {
+                        if (lTitle) { lTitle.innerText = '⏳ ONAY BEKLENİYOR'; lTitle.style.color = 'var(--neon-yellow)'; }
+                        if (lMsgMain) { lMsgMain.innerHTML = 'Hesabın buluta kaydedildi! Ancak kurucu <b>(beratozer)</b> tarafından onaylanmadığın için ağ akışına giremezsin.'; lMsgMain.style.color = 'var(--neon-yellow)'; }
+                        if (lMsgSub) { lMsgSub.innerText = 'Kurucu seni onayladığı an bu ekran otomatik olarak açılacaktır. Lütfen bekle...'; }
+                    }
                     
                     const lBox = document.getElementById('lock-avatar-box');
                     const lImg = document.getElementById('lock-avatar-img');
@@ -2151,9 +2200,9 @@ x<!DOCTYPE html>
             updateMyStats: function() {
                 if (!this.currentUser) return;
                 
-                // 1. Gönderi sayısı: Aktif hikayesi var mı?
-                const stories = CloudEngine.storiesCache;
-                const myPostCount = stories[this.currentUser.username] ? 1 : 0;
+              // 1. Gönderi sayısı: gerçek post sayısı
+                const myPosts = CloudEngine.postsCache[this.currentUser.username] || {};
+                const myPostCount = Object.keys(myPosts).length;
                 
                 // 2. Takipçi ve takip edilen sayıları buluttan kesin çekilir
                 const followers = this.currentUser.followersList ? this.currentUser.followersList.length : 0;
@@ -2198,30 +2247,124 @@ x<!DOCTYPE html>
                 });
             },
 
-            showMyStories: function() {
+           showMyStories: function() {
                 HapticEngine.playClick(600, 0.04);
                 const stories = CloudEngine.storiesCache;
                 if (stories[this.currentUser.username]) {
                     this.openStoryViewer(stories[this.currentUser.username]);
                 } else {
-                    Toast.show("Şuan aktif bir 24 saatlik hikayen/gönderin yok kanka! ➕ butonundan atabilirsin.", "normal");
+                    Toast.show("Şuan aktif bir 24 saatlik hikayen yok kanka! ➕ butonundan atabilirsin.", "normal");
                 }
             },
 
-            showMyFollowers: function() {
-                HapticEngine.playClick(550, 0.03);
-                const list = this.currentUser.followersList || [];
-                if (list.length === 0) Toast.show("Henüz seni takip eden kimse yok.", "normal");
-                else Toast.show(`Seni Takip Edenler: ${list.join(', ')}`, "success", 4000);
+            handlePostUpload: function(event) {
+                const f = event.target.files[0];
+                if (f && this.currentUser) {
+                    Toast.show("Gönderi fotoğrafı buluta göre optimize ediliyor...", "normal");
+                    ImageCompressor.compress(f, 1080, 1350, 0.75, (compressedDataUrl) => {
+                        const postObj = {
+                            username: this.currentUser.username,
+                            avatar: this.currentUser.ppUrl,
+                            image: compressedDataUrl,
+                            timestamp: Date.now()
+                        };
+                        CloudEngine.savePost(this.currentUser.username, postObj, () => {
+                            HapticEngine.playClick(850, 0.06);
+                            Toast.show("Gönderin buluta başarıyla basıldı! 📸", "success");
+                            this.updateMyStats();
+                        });
+                    });
+                }
+            },
+
+            showMyPosts: function() {
+                HapticEngine.playClick(600, 0.04);
+                this.openPostsModal(this.currentUser.username);
+            },
+
+            openPostsModal: function(username) {
+                const posts = CloudEngine.postsCache[username] || {};
+                const dom = document.getElementById('posts-grid-dom');
+                if (dom) {
+                    dom.innerHTML = '';
+                    const keys = Object.keys(posts);
+                    if (keys.length === 0) {
+                        dom.innerHTML = `<p style="grid-column: span 2; text-align:center; color:var(--text-muted); padding:20px;">Henüz gönderi yok.</p>`;
+                    } else {
+                        keys.sort((a,b) => posts[b].timestamp - posts[a].timestamp).forEach(pid => {
+                            const p = posts[pid];
+                            const canDelete = (this.currentUser.username === username || this.currentUser.isAdmin);
+                            const box = document.createElement('div');
+                            box.style.position = 'relative';
+                            box.innerHTML = `<img src="${p.image}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px;">
+                                ${canDelete ? `<button onclick="AppController.deletePostAction('${username}','${pid}')" style="position:absolute; top:4px; right:4px; background:rgba(255,23,68,0.85); border:none; color:#fff; border-radius:8px; padding:4px 8px; font-size:0.7rem; cursor:pointer;">🗑️</button>` : ''}`;
+                            dom.appendChild(box);
+                        });
+                    }
+                }
+                const modal = document.getElementById('posts-modal');
+                if (modal) modal.style.display = 'flex';
+            },
+
+            closePostsModal: function() {
+                HapticEngine.playClick(400, 0.03);
+                const modal = document.getElementById('posts-modal');
+                if (modal) modal.style.display = 'none';
+            },
+
+            deletePostAction: function(username, postId) {
+                if (confirm('Bu gönderiyi silmek istediğine emin misin?')) {
+                    HapticEngine.playClick(300, 0.08);
+                    CloudEngine.deletePost(username, postId);
+                    Toast.show('Gönderi silindi! 🗑️', 'error');
+                    this.openPostsModal(username);
+                    this.updateMyStats();
+                }
+            },
+
+showMyFollowers: function() {
+                this.openUserListModal('Takipçiler', this.currentUser.followersList || []);
             },
 
             showMyFollowing: function() {
-                HapticEngine.playClick(550, 0.03);
-                const list = this.currentUser.followingList || [];
-                if (list.length === 0) Toast.show("Henüz kimseyi takip etmiyorsun.", "normal");
-                else Toast.show(`Takip Ettiklerin: ${list.join(', ')}`, "success", 4000);
+                this.openUserListModal('Takip Edilenler', this.currentUser.followingList || []);
             },
 
+            openUserListModal: function(title, usernames) {
+                HapticEngine.playClick(600, 0.04);
+                const titleEl = document.getElementById('userlist-title');
+                if (titleEl) titleEl.innerText = title;
+                const dom = document.getElementById('userlist-dom');
+                if (dom) {
+                    dom.innerHTML = '';
+                    if (!usernames || usernames.length === 0) {
+                        dom.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:20px;">Burada kimse yok.</p>`;
+                    } else {
+                        usernames.forEach(un => {
+                            const u = CloudEngine.usersCache[un];
+                            const avHtml = (u && u.ppUrl) ? `<img src="${u.ppUrl}" class="user-avatar">` : `<div class="user-avatar pp-display-style"></div>`;
+                            const badge = u ? this.getBadgeHtml(u) : '';
+                            const item = document.createElement('div');
+                            item.className = 'user-item hover-scale';
+                            item.innerHTML = `
+                                <div class="user-meta" onclick="AppController.closeUserListModal(); AppController.openProfileModal('${un}', '${(u && u.ppUrl) || ''}')">
+                                    ${avHtml}
+                                    <div class="user-name-box"><h4>${un} ${badge}</h4></div>
+                                </div>
+                            `;
+                            dom.appendChild(item);
+                        });
+                    }
+                }
+                const modal = document.getElementById('userlist-modal');
+                if (modal) modal.style.display = 'flex';
+            },
+
+           closeUserListModal: function() {
+                HapticEngine.playClick(400, 0.03);
+                const modal = document.getElementById('userlist-modal');
+                if (modal) modal.style.display = 'none';
+            },
             refreshUI: function() { 
                 this.renderUserLists(); 
                 this.renderStories(); 
@@ -2301,7 +2444,7 @@ x<!DOCTYPE html>
                                 </div>
                                 <div class="admin-action-btn-group">
                                     <button class="approve-btn" onclick="AppController.approveUserAction('${u.username}')">ONAYLA</button>
-                                    <button class="reject-btn" onclick="AppController.deleteUserAction('${u.username}')">REDDET</button>
+                                    <button class="reject-btn" onclick="AppController.rejectUserAction('${u.username}')">REDDET</button>
                                 </div>
                             `;
                             if (pendingDom) pendingDom.appendChild(item);
@@ -2312,7 +2455,7 @@ x<!DOCTYPE html>
                 if (pendingCount === 0 && pendingDom) pendingDom.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:12px;">Bekleyen istek yok şef.</p>`;
             },
 
-            approveUserAction: function(un) {
+           approveUserAction: function(un) {
                 if (this.currentUser.username !== 'beratozer' && !this.currentUser.isAdmin) return;
                 const target = CloudEngine.usersCache[un];
                 if (target) {
@@ -2322,6 +2465,21 @@ x<!DOCTYPE html>
                         Toast.show(`${un} bulutta onaylandı! Karşı tarafın kilidi açıldı... ⚡`, "success");
                         CloudEngine.logAdminAction(`'${un}' kullanıcısı onaylandı.`);
                     });
+                }
+            },
+
+            rejectUserAction: function(un) {
+                if (this.currentUser.username !== 'beratozer' && !this.currentUser.isAdmin) return;
+                if (confirm(`${un} kullanıcısının başvurusunu reddetmek istediğine emin misin?`)) {
+                    const target = CloudEngine.usersCache[un];
+                    if (target) {
+                        target.status = 'reddedildi';
+                        CloudEngine.saveUser(target, () => {
+                            HapticEngine.playClick(300, 0.08);
+                            Toast.show(`${un} reddedildi.`, "error");
+                            CloudEngine.logAdminAction(`'${un}' kullanıcısının başvurusu reddedildi.`);
+                        });
+                    }
                 }
             },
 
@@ -2410,7 +2568,7 @@ x<!DOCTYPE html>
                 if (modal) modal.style.display = 'flex';
             },
 
-            toggleFollowUser: function(targetUn) {
+          toggleFollowUser: function(targetUn) {
                 HapticEngine.playClick(750, 0.05);
                 const targetUser = CloudEngine.usersCache[targetUn];
                 if (!targetUser || !this.currentUser || targetUn === this.currentUser.username) return;
@@ -2419,19 +2577,27 @@ x<!DOCTYPE html>
                 if (!this.currentUser.followingList) this.currentUser.followingList = [];
 
                 const isFollowing = targetUser.followersList.includes(this.currentUser.username);
+                let newFollowers, newFollowing;
 
                 if (isFollowing) {
-                    targetUser.followersList = targetUser.followersList.filter(u => u !== this.currentUser.username);
-                    this.currentUser.followingList = this.currentUser.followingList.filter(u => u !== targetUn);
+                    newFollowers = targetUser.followersList.filter(u => u !== this.currentUser.username);
+                    newFollowing = this.currentUser.followingList.filter(u => u !== targetUn);
                     Toast.show(`${targetUn} takipten çıkarıldı! ❌`, "normal");
                 } else {
-                    targetUser.followersList.push(this.currentUser.username);
-                    this.currentUser.followingList.push(targetUn);
+                    newFollowers = [...targetUser.followersList, this.currentUser.username];
+                    newFollowing = [...this.currentUser.followingList, targetUn];
                     Toast.show(`${targetUn} takip ediliyor! Karşıya bildirildi 🌟`, "success");
                 }
 
-                CloudEngine.saveUser(targetUser);
-                CloudEngine.saveUser(this.currentUser);
+                targetUser.followersList = newFollowers;
+                this.currentUser.followingList = newFollowing;
+
+                if (CloudEngine.dbRef) {
+                    const updates = {};
+                    updates['users/' + targetUn + '/followersList'] = newFollowers;
+                    updates['users/' + this.currentUser.username + '/followingList'] = newFollowing;
+                    CloudEngine.dbRef.ref().update(updates);
+                }
                 
                 this.updateMyStats();
                 this.openProfileModal(targetUn, targetUser.ppUrl);
@@ -2628,8 +2794,11 @@ x<!DOCTYPE html>
                 }
             },
 
-            getRoomId: function(u1, u2) { return u1 < u2 ? `${u1}_${u2}` : `${u2}_${u1}`; },
-
+getRoomId: function(u1, u2) {
+                const uid1 = (CloudEngine.usersCache[u1] && CloudEngine.usersCache[u1].authUid) || u1;
+                const uid2 = (CloudEngine.usersCache[u2] && CloudEngine.usersCache[u2].authUid) || u2;
+                return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+            },
             sendMessage: function() {
                 const f = document.getElementById('chat-input-field');
                 if (!f || !this.activeChatTarget || !this.currentUser) return;
@@ -2697,8 +2866,8 @@ x<!DOCTYPE html>
 
             logout: function() {
                 HapticEngine.playClick(400, 0.06);
-                localStorage.removeItem('berostyle_session');
-                localStorage.removeItem('berostyle_temp_reg');
+                sessionStorage.removeItem('berostyle_session');
+                sessionStorage.removeItem('berostyle_temp_reg');
                 this.currentUser = null;
                 Toast.show("Oturum güvenle kapatıldı.", "normal");
                 setTimeout(() => location.reload(), 400);
