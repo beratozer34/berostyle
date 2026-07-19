@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+x<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -11,6 +11,7 @@
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     
     <style>
         /* ==========================================================================
@@ -1663,6 +1664,9 @@
                         firebase.initializeApp(firebaseConfig);
                     }
                     this.dbRef = firebase.database();
+                    firebase.auth().signInAnonymously().catch((err) => {
+                        console.error("Anonim giriş hatası:", err);
+                    });
                     console.log("🔥 BEROSTYLE BULUT VERİTABANINA BAĞLANDI!");
                     this.startRealtimeListeners();
                 } catch (e) {
